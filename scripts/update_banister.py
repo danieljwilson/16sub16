@@ -28,7 +28,7 @@ from pathlib import Path
 # CONFIG
 # ─────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent
-HTML_PATH = ROOT / "16sub16_tracker.html"
+HTML_PATH = ROOT / "index.html"
 LOG_PATH  = ROOT / "data" / "training_log.json"
 
 # Campaign constants (mirror the HTML)
