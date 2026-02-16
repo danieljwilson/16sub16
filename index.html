@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>16sub16 — Road to Sub-16 5K</title>
+<title>16→sub16 — Road to Sub-16 5K</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Lora:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
 :root {
@@ -22,9 +22,9 @@ body {
   padding: 52px 40px; max-width: 1300px; margin: 0 auto;
 }
 h1 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: 'Space Grotesk', 'Source Sans 3', sans-serif;
   font-size: 3rem; font-weight: 700; color: var(--text);
-  letter-spacing: -1px; line-height: 1; margin-bottom: 6px;
+  letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px;
 }
 h2 {
   font-size: 0.64rem; font-weight: 600; color: var(--muted);
@@ -64,6 +64,49 @@ h2 {
 .toggle.active { background: var(--text); border-color: var(--text); color: var(--bg); }
 .toggle:hover:not(.active) { border-color: var(--text); }
 .dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.banister-controls {
+  margin: 6px 0 18px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.banister-controls-title {
+  font-size: 0.66rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.banister-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.banister-control-row {
+  display: grid;
+  grid-template-columns: 58px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+}
+.banister-control-row label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.banister-control-row input[type="range"] {
+  width: 100%;
+}
+.banister-control-value {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.74rem;
+  text-align: right;
+  color: var(--text);
+}
+.banister-controls-note {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
 .chart-wrap {
   background: var(--card); border: 1px solid var(--border);
   padding: 0; margin-bottom: 36px;
@@ -81,6 +124,16 @@ h2 {
   gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
 }
 .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
+.card-desc a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.model-callout {
+  font-size: 0.74rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--yellow);
+  background: var(--bg);
+}
 .pred-box { background: var(--bg); padding: 10px 12px; }
 .pred-row {
   display: flex; justify-content: space-between; font-size: 0.78rem;
@@ -117,8 +170,8 @@ h2 {
 </head>
 <body>
 
-<h1>16sub16</h1>
-<p class="subtitle">Road to Sub-16 5K &nbsp;·&nbsp; Dec 28, 2025 → Apr 19, 2026 &nbsp;·&nbsp; Côte d'Azur race circuit</p>
+<h1>16→sub16</h1>
+<p class="subtitle">Road to Sub-16 5K &nbsp;·&nbsp; Dec 28, 2025 → Apr 19, 2026</p>
 
 <div class="week-row" id="weekRow"></div>
 
@@ -126,6 +179,7 @@ h2 {
 
 <div class="toggles" id="toggles"></div>
 <p style="font-size:0.68rem;color:var(--muted);margin-bottom:14px;">Select up to 2 models to compare — clicking a third swaps out the oldest selection.</p>
+<div class="banister-controls" id="banisterControls" hidden></div>
 
 <div class="chart-wrap">
   <div id="chart" class="main-chart"></div>
@@ -141,8 +195,14 @@ h2 {
 
 <script>
 // BANISTER_DATA_START
-const BANISTER_SERIES=[{"day":-1,"fit":22.2545,"fat":35.0837},{"day":0,"fit":24.8928,"fat":48.3032},{"day":1,"fit":24.3071,"fat":41.873},{"day":2,"fit":23.7352,"fat":36.2988},{"day":3,"fit":25.0123,"fat":41.8524},{"day":4,"fit":24.4238,"fat":36.2809},{"day":5,"fit":26.4522,"fat":46.1787},{"day":6,"fit":26.8442,"fat":45.7706},{"day":7,"fit":29.4155,"fat":57.7995},{"day":8,"fit":28.7234,"fat":50.1051},{"day":9,"fit":28.0476,"fat":43.435},{"day":10,"fit":29.6532,"fat":50.4711},{"day":11,"fit":32.9806,"fat":66.5257},{"day":12,"fit":34.3488,"fat":69.8016},{"day":13,"fit":33.5406,"fat":60.5095},{"day":14,"fit":32.7515,"fat":52.4543},{"day":15,"fit":35.1772,"fat":63.5563},{"day":16,"fit":38.6272,"fat":79.2981},{"day":17,"fit":39.6187,"fat":79.494},{"day":18,"fit":38.6866,"fat":68.9116},{"day":19,"fit":40.418,"fat":74.6842},{"day":20,"fit":39.467,"fat":64.7421},{"day":21,"fit":38.5384,"fat":56.1235},{"day":22,"fit":40.7431,"fat":66.2564},{"day":23,"fit":39.7845,"fat":57.4362},{"day":24,"fit":40.9913,"fat":61.9148},{"day":25,"fit":42.988,"fat":70.4261},{"day":26,"fit":45.2785,"fat":79.7335},{"day":27,"fit":47.2402,"fat":86.2459},{"day":28,"fit":48.0599,"fat":85.6909},{"day":29,"fit":48.2036,"fat":81.4948},{"day":30,"fit":51.017,"fat":92.9809},{"day":31,"fit":49.8166,"fat":80.603},{"day":32,"fit":50.9717,"fat":83.0402},{"day":33,"fit":56.5485,"fat":110.3244},{"day":34,"fit":55.218,"fat":95.6378},{"day":35,"fit":53.9189,"fat":82.9063},{"day":36,"fit":55.6353,"fat":88.7588},{"day":37,"fit":58.4579,"fat":100.3196},{"day":38,"fit":59.5748,"fat":101.0663},{"day":39,"fit":60.065,"fat":98.3166},{"day":40,"fit":61.3745,"fat":100.6335},{"day":41,"fit":63.4189,"fat":106.9743},{"day":42,"fit":61.9268,"fat":92.7337},{"day":43,"fit":63.1901,"fat":95.7804},{"day":44,"fit":63.1994,"fat":91.4946},{"day":45,"fit":61.7124,"fat":79.3146},{"day":46,"fit":64.9652,"fat":95.3753},{"day":47,"fit":65.3118,"fat":93.2885},{"day":48,"fit":65.3529,"fat":89.7966},{"day":49,"fit":67.177,"fat":96.8629},{"day":50,"fit":68.269,"fat":99.0897},{"day":51,"fit":69.2189,"fat":100.3613},{"day":52,"fit":70.1464,"fat":101.4636},{"day":53,"fit":71.0522,"fat":102.4192},{"day":54,"fit":71.9366,"fat":103.2475},{"day":55,"fit":72.8002,"fat":103.9656},{"day":56,"fit":73.6435,"fat":104.5881},{"day":57,"fit":74.467,"fat":105.1278},{"day":58,"fit":75.271,"fat":105.5956},{"day":59,"fit":76.0562,"fat":106.0011},{"day":60,"fit":76.8229,"fat":106.3526},{"day":61,"fit":77.5715,"fat":106.6574},{"day":62,"fit":78.3026,"fat":106.9216},{"day":63,"fit":79.0164,"fat":107.1506},{"day":64,"fit":79.7134,"fat":107.3491},{"day":65,"fit":80.3941,"fat":107.5212},{"day":66,"fit":81.0587,"fat":107.6704},{"day":67,"fit":81.7077,"fat":107.7997},{"day":68,"fit":82.3414,"fat":107.9118},{"day":69,"fit":82.9602,"fat":108.009},{"day":70,"fit":83.5644,"fat":108.0932},{"day":71,"fit":84.1545,"fat":108.1663},{"day":72,"fit":84.7306,"fat":108.2296},{"day":73,"fit":85.2932,"fat":108.2844},{"day":74,"fit":85.8426,"fat":108.332},{"day":75,"fit":86.379,"fat":108.3733},{"day":76,"fit":86.9028,"fat":108.409},{"day":77,"fit":87.4143,"fat":108.44},{"day":78,"fit":87.9137,"fat":108.4669},{"day":79,"fit":88.4014,"fat":108.4902},{"day":80,"fit":88.8776,"fat":108.5104},{"day":81,"fit":89.3427,"fat":108.5279},{"day":82,"fit":89.7967,"fat":108.543},{"day":83,"fit":90.2401,"fat":108.5562},{"day":84,"fit":90.6731,"fat":108.5676},{"day":85,"fit":91.0959,"fat":108.5775},{"day":86,"fit":91.5087,"fat":108.586},{"day":87,"fit":91.9118,"fat":108.5935},{"day":88,"fit":92.3054,"fat":108.5999},{"day":89,"fit":92.6898,"fat":108.6055},{"day":90,"fit":93.0651,"fat":108.6103},{"day":91,"fit":93.4316,"fat":108.6145},{"day":92,"fit":93.7895,"fat":108.6182},{"day":93,"fit":94.1389,"fat":108.6213},{"day":94,"fit":94.1015,"fat":106.4814},{"day":95,"fit":94.0649,"fat":104.6264},{"day":96,"fit":94.0292,"fat":103.0183},{"day":97,"fit":93.9943,"fat":101.6243},{"day":98,"fit":93.9602,"fat":100.4159},{"day":99,"fit":93.927,"fat":99.3683},{"day":100,"fit":93.8945,"fat":98.4602},{"day":101,"fit":93.8628,"fat":97.673},{"day":102,"fit":93.8318,"fat":96.9906},{"day":103,"fit":93.8016,"fat":96.399},{"day":104,"fit":93.7721,"fat":95.8862},{"day":105,"fit":93.7432,"fat":95.4416},{"day":106,"fit":93.6907,"fat":94.918},{"day":107,"fit":93.5172,"fat":93.773},{"day":108,"fit":93.2256,"fat":92.0892},{"day":109,"fit":92.8187,"fat":89.9384},{"day":110,"fit":92.2992,"fat":87.3827},{"day":111,"fit":91.6698,"fat":84.4761},{"day":112,"fit":90.9331,"fat":81.2652}];
-const BANISTER_PARAMS={"p0": 1022.414, "k1": 4.1, "k2": 3.28};
+const BANISTER_SERIES=[{"day":-1,"fit":21.0022,"fat":35.5985},{"day":0,"fit":23.3892,"fat":50.7644},{"day":1,"fit":22.8968,"fat":42.9711},{"day":2,"fit":22.4148,"fat":36.3743},{"day":3,"fit":23.5853,"fat":42.7672},{"day":4,"fit":23.0888,"fat":36.2016},{"day":5,"fit":24.9317,"fat":47.6281},{"day":6,"fit":25.3145,"fat":46.9349},{"day":7,"fit":27.6474,"fat":60.6281},{"day":8,"fit":27.0653,"fat":51.3206},{"day":9,"fit":26.4956,"fat":43.442},{"day":10,"fit":27.9648,"fat":51.5549},{"day":11,"fit":30.9775,"fat":69.903},{"day":12,"fit":32.2439,"fat":73.1623},{"day":13,"fit":31.5651,"fat":61.9306},{"day":14,"fit":30.9006,"fat":52.4231},{"day":15,"fit":33.11,"fat":65.2308},{"day":16,"fit":36.2404,"fat":83.1274},{"day":17,"fit":37.1778,"fat":82.7655},{"day":18,"fit":36.3951,"fat":70.0595},{"day":19,"fit":37.9925,"fat":76.5403},{"day":20,"fit":37.1927,"fat":64.79},{"day":21,"fit":36.4098,"fat":54.8435},{"day":22,"fit":38.4272,"fat":66.7255},{"day":23,"fit":37.6182,"fat":56.4819},{"day":24,"fit":38.7437,"fat":61.7932},{"day":25,"fit":40.5774,"fat":71.6272},{"day":26,"fit":42.6777,"fat":82.1762},{"day":27,"fit":44.4876,"fat":89.3114},{"day":28,"fit":45.279,"fat":88.2008},{"day":29,"fit":45.4661,"fat":82.9764},{"day":30,"fit":48.041,"fat":95.9949},{"day":31,"fit":47.0296,"fat":81.2579},{"day":32,"fit":48.1218,"fat":83.968},{"day":33,"fit":53.1716,"fat":115.29},{"day":34,"fit":52.0523,"fat":97.5909},{"day":35,"fit":50.9565,"fat":82.6089},{"day":36,"fit":52.5546,"fat":89.4038},{"day":37,"fit":55.145,"fat":102.6368},{"day":38,"fit":56.2141,"fat":103.1422},{"day":39,"fit":56.7235,"fat":99.6525},{"day":40,"fit":57.9655,"fat":102.1193},{"day":41,"fit":59.8664,"fat":109.2035},{"day":42,"fit":58.6061,"fat":92.4388},{"day":43,"fit":59.8064,"fat":95.9975},{"day":44,"fit":59.886,"fat":91.0218},{"day":45,"fit":58.6252,"fat":77.0483},{"day":46,"fit":61.6006,"fat":95.9176},{"day":47,"fit":61.9816,"fat":93.4278},{"day":48,"fit":62.0885,"fat":89.3795},{"day":49,"fit":63.7893,"fat":97.5925},{"day":50,"fit":64.8377,"fat":100.0484},{"day":51,"fit":65.7598,"fat":101.3677},{"day":52,"fit":66.6626,"fat":102.4844},{"day":53,"fit":67.5463,"fat":103.4297},{"day":54,"fit":68.4114,"fat":104.2298},{"day":55,"fit":69.2584,"fat":104.9072},{"day":56,"fit":70.0875,"fat":105.4805},{"day":57,"fit":70.8991,"fat":105.9658},{"day":58,"fit":71.6937,"fat":106.3766},{"day":59,"fit":72.4715,"fat":106.7244},{"day":60,"fit":73.2329,"fat":107.0187},{"day":61,"fit":73.9784,"fat":107.2679},{"day":62,"fit":74.7081,"fat":107.4788},{"day":63,"fit":75.4225,"fat":107.6574},{"day":64,"fit":76.1218,"fat":107.8085},{"day":65,"fit":76.8064,"fat":107.9364},{"day":66,"fit":77.4766,"fat":108.0447},{"day":67,"fit":78.1327,"fat":108.1364},{"day":68,"fit":78.7749,"fat":108.214},{"day":69,"fit":79.4037,"fat":108.2797},{"day":70,"fit":80.0192,"fat":108.3353},{"day":71,"fit":80.6218,"fat":108.3823},{"day":72,"fit":81.2116,"fat":108.4222},{"day":73,"fit":81.7891,"fat":108.4559},{"day":74,"fit":82.3544,"fat":108.4844},{"day":75,"fit":82.9078,"fat":108.5086},{"day":76,"fit":83.4496,"fat":108.5291},{"day":77,"fit":83.9799,"fat":108.5464},{"day":78,"fit":84.4991,"fat":108.561},{"day":79,"fit":85.0073,"fat":108.5734},{"day":80,"fit":85.5049,"fat":108.5839},{"day":81,"fit":85.992,"fat":108.5928},{"day":82,"fit":86.4688,"fat":108.6003},{"day":83,"fit":86.9356,"fat":108.6067},{"day":84,"fit":87.3925,"fat":108.6121},{"day":85,"fit":87.8399,"fat":108.6167},{"day":86,"fit":88.2778,"fat":108.6205},{"day":87,"fit":88.7065,"fat":108.6238},{"day":88,"fit":89.1261,"fat":108.6266},{"day":89,"fit":89.537,"fat":108.6289},{"day":90,"fit":89.9392,"fat":108.6309},{"day":91,"fit":90.3329,"fat":108.6326},{"day":92,"fit":90.7183,"fat":108.634},{"day":93,"fit":91.0957,"fat":108.6352},{"day":94,"fit":91.1262,"fat":106.1653},{"day":95,"fit":91.1561,"fat":104.0746},{"day":96,"fit":91.1854,"fat":102.3049},{"day":97,"fit":91.2141,"fat":100.8068},{"day":98,"fit":91.2421,"fat":99.5388},{"day":99,"fit":91.2696,"fat":98.4654},{"day":100,"fit":91.2965,"fat":97.5567},{"day":101,"fit":91.3228,"fat":96.7876},{"day":102,"fit":91.3485,"fat":96.1366},{"day":103,"fit":91.3738,"fat":95.5855},{"day":104,"fit":91.3985,"fat":95.119},{"day":105,"fit":91.4226,"fat":94.7241},{"day":106,"fit":91.4244,"fat":94.2304},{"day":107,"fit":91.3169,"fat":93.0155},{"day":108,"fit":91.1023,"fat":91.19},{"day":109,"fit":90.783,"fat":88.8477},{"day":110,"fit":90.3611,"fat":86.0679},{"day":111,"fit":89.8387,"fat":82.9178},{"day":112,"fit":89.218,"fat":79.4542}];
+const BANISTER_PARAMS={"p0": 1040.0557, "k1": 0.95, "k2": 0.76};
+const BANISTER_DAILY_LOADS=[{"day":-120,"w":0.0},{"day":-119,"w":0.0},{"day":-118,"w":0.0},{"day":-117,"w":0.0},{"day":-116,"w":0.0},{"day":-115,"w":0.0},{"day":-114,"w":0.0},{"day":-113,"w":0.0},{"day":-112,"w":0.0},{"day":-111,"w":0.0},{"day":-110,"w":0.0},{"day":-109,"w":0.0},{"day":-108,"w":0.0},{"day":-107,"w":0.0},{"day":-106,"w":0.0},{"day":-105,"w":0.0},{"day":-104,"w":0.0},{"day":-103,"w":0.0},{"day":-102,"w":0.0},{"day":-101,"w":0.0},{"day":-100,"w":0.0},{"day":-99,"w":0.0},{"day":-98,"w":0.0},{"day":-97,"w":0.0},{"day":-96,"w":0.0},{"day":-95,"w":0.0},{"day":-94,"w":0.0},{"day":-93,"w":0.0},{"day":-92,"w":0.0},{"day":-91,"w":0.0},{"day":-90,"w":0.0},{"day":-89,"w":0.0},{"day":-88,"w":0.0},{"day":-87,"w":0.0},{"day":-86,"w":0.0},{"day":-85,"w":0.0},{"day":-84,"w":0.0},{"day":-83,"w":0.0},{"day":-82,"w":0.0},{"day":-81,"w":0.0},{"day":-80,"w":0.0},{"day":-79,"w":0.0},{"day":-78,"w":0.0},{"day":-77,"w":0.0},{"day":-76,"w":0.0},{"day":-75,"w":0.0},{"day":-74,"w":0.0},{"day":-73,"w":0.0},{"day":-72,"w":0.0},{"day":-71,"w":0.0},{"day":-70,"w":0.0},{"day":-69,"w":0.0},{"day":-68,"w":0.0},{"day":-67,"w":124.078},{"day":-66,"w":0.0},{"day":-65,"w":0.0},{"day":-64,"w":0.0},{"day":-63,"w":45.963},{"day":-62,"w":0.0},{"day":-61,"w":0.0},{"day":-60,"w":0.0},{"day":-59,"w":0.0},{"day":-58,"w":0.0},{"day":-57,"w":0.0},{"day":-56,"w":0.0},{"day":-55,"w":0.0},{"day":-54,"w":0.0},{"day":-53,"w":96.341},{"day":-52,"w":0.0},{"day":-51,"w":87.096},{"day":-50,"w":0.0},{"day":-49,"w":0.0},{"day":-48,"w":0.0},{"day":-47,"w":26.79},{"day":-46,"w":0.0},{"day":-45,"w":0.0},{"day":-44,"w":62.7},{"day":-43,"w":0.0},{"day":-42,"w":0.0},{"day":-41,"w":0.0},{"day":-40,"w":58.4},{"day":-39,"w":0.0},{"day":-38,"w":81.05},{"day":-37,"w":0.0},{"day":-36,"w":0.0},{"day":-35,"w":42.87},{"day":-34,"w":250.948},{"day":-33,"w":0.0},{"day":-32,"w":0.0},{"day":-31,"w":12.1},{"day":-30,"w":71.01},{"day":-29,"w":0.0},{"day":-28,"w":0.0},{"day":-27,"w":0.0},{"day":-26,"w":0.0},{"day":-25,"w":0.0},{"day":-24,"w":0.0},{"day":-23,"w":0.0},{"day":-22,"w":0.0},{"day":-21,"w":0.0},{"day":-20,"w":0.0},{"day":-19,"w":156.976},{"day":-18,"w":0.0},{"day":-17,"w":69.88},{"day":-16,"w":0.0},{"day":-15,"w":0.0},{"day":-14,"w":0.0},{"day":-13,"w":0.0},{"day":-12,"w":96.266},{"day":-11,"w":0.0},{"day":-10,"w":134.606},{"day":-9,"w":55.7},{"day":-8,"w":0.0},{"day":-7,"w":0.0},{"day":-6,"w":0.0},{"day":-5,"w":83.73},{"day":-4,"w":0.0},{"day":-3,"w":97.92},{"day":-2,"w":0.0},{"day":-1,"w":43.774},{"day":0,"w":134.387},{"day":1,"w":0.0},{"day":2,"w":0.0},{"day":3,"w":78.017},{"day":4,"w":0.0},{"day":5,"w":110.632},{"day":6,"w":43.113},{"day":7,"w":136.131},{"day":8,"w":0.0},{"day":9,"w":0.0},{"day":10,"w":96.289},{"day":11,"w":171.072},{"day":12,"w":91.134},{"day":13,"w":0.0},{"day":14,"w":0.0},{"day":15,"w":135.851},{"day":16,"w":181.807},{"day":17,"w":80.77},{"day":18,"w":0.0},{"day":19,"w":112.275},{"day":20,"w":0.0},{"day":21,"w":0.0},{"day":22,"w":132.241},{"day":23,"w":0.0},{"day":24,"w":91.079},{"day":25,"w":125.851},{"day":26,"w":140.342},{"day":27,"w":128.654},{"day":28,"w":82.077},{"day":29,"w":54.17},{"day":30,"w":167.777},{"day":31,"w":0.0},{"day":32,"w":98.911},{"day":33,"w":287.996},{"day":34,"w":0.0},{"day":35,"w":0.0},{"day":36,"w":126.87},{"day":37,"w":175.602},{"day":38,"w":105.929},{"day":39,"w":80.411},{"day":40,"w":115.721},{"day":41,"w":148.265},{"day":42,"w":0.0},{"day":43,"w":115.62},{"day":44,"w":63.586},{"day":45,"w":0.0},{"day":46,"w":199.961},{"day":47,"w":79.699},{"day":48,"w":67.058},{"day":49,"w":142.878},{"day":50,"w":113.59},{"day":51,"w":108.6418},{"day":52,"w":108.6418},{"day":53,"w":108.6418},{"day":54,"w":108.6418},{"day":55,"w":108.6418},{"day":56,"w":108.6418},{"day":57,"w":108.6418},{"day":58,"w":108.6418},{"day":59,"w":108.6418},{"day":60,"w":108.6418},{"day":61,"w":108.6418},{"day":62,"w":108.6418},{"day":63,"w":108.6418},{"day":64,"w":108.6418},{"day":65,"w":108.6418},{"day":66,"w":108.6418},{"day":67,"w":108.6418},{"day":68,"w":108.6418},{"day":69,"w":108.6418},{"day":70,"w":108.6418},{"day":71,"w":108.6418},{"day":72,"w":108.6418},{"day":73,"w":108.6418},{"day":74,"w":108.6418},{"day":75,"w":108.6418},{"day":76,"w":108.6418},{"day":77,"w":108.6418},{"day":78,"w":108.6418},{"day":79,"w":108.6418},{"day":80,"w":108.6418},{"day":81,"w":108.6418},{"day":82,"w":108.6418},{"day":83,"w":108.6418},{"day":84,"w":108.6418},{"day":85,"w":108.6418},{"day":86,"w":108.6418},{"day":87,"w":108.6418},{"day":88,"w":108.6418},{"day":89,"w":108.6418},{"day":90,"w":108.6418},{"day":91,"w":108.6418},{"day":92,"w":108.6418},{"day":93,"w":108.6418},{"day":94,"w":92.5467},{"day":95,"w":92.5467},{"day":96,"w":92.5467},{"day":97,"w":92.5467},{"day":98,"w":92.5467},{"day":99,"w":92.5467},{"day":100,"w":92.5467},{"day":101,"w":92.5467},{"day":102,"w":92.5467},{"day":103,"w":92.5467},{"day":104,"w":92.5467},{"day":105,"w":92.5467},{"day":106,"w":91.5084},{"day":107,"w":86.3164},{"day":108,"w":81.1244},{"day":109,"w":75.9325},{"day":110,"w":70.7405},{"day":111,"w":65.5485},{"day":112,"w":60.3566}];
+const BANISTER_BASE_TAU_FIT=47.0;
+const BANISTER_BASE_TAU_FAT=6.0;
+const BANISTER_PRELOAD_DAYS=120;
+const BANISTER_GOAL_EXPECTED_MAX_S=1018;
+const BANISTER_GOAL_EXPECTATION_WEIGHT=60.0;
 const BANISTER_UPDATED="2026-02-16";
 const BANISTER_UPDATED_DAY=50;
 // BANISTER_DATA_END
@@ -200,6 +260,30 @@ function trailingMean(values, windowDays) {
     for (let j = start; j <= i; j++) sum += values[j];
     return sum / (i - start + 1);
   });
+}
+
+function getModelDisplaySeries(model, days = Array.from({length: GOAL_DAY + 1}, (_, i) => i)) {
+  const rawY = days.map(t => model.predict(t));
+  return model.key === 'banister' ? trailingMean(rawY, BANISTER_SMOOTHING_DAYS) : rawY;
+}
+
+function getModelDisplayPredictionAt(day, model) {
+  return getModelDisplaySeries(model)[day];
+}
+
+function getModelDescription(model) {
+  if (typeof model.getDesc === 'function') return model.getDesc();
+  return model.desc || '';
+}
+
+function getModelTerms(model) {
+  if (typeof model.getTerms === 'function') return model.getTerms();
+  return model.terms || [];
+}
+
+function getModelCallout(model) {
+  if (typeof model.getCallout === 'function') return model.getCallout();
+  return model.callout || '';
 }
 
 // ─────────────────────────────────────────────────────────
@@ -320,34 +404,156 @@ const MODELS = [
   },
 ];
 
-// Banister model
+// Banister model (supports interactive tau tuning)
+const BANISTER_TAU_LIMITS = {
+  fit: { min: 40, max: 60, step: 1 },
+  fat: { min: 5, max: 12, step: 1 },
+};
+
+const banisterRuntime = {
+  tauFit: typeof BANISTER_BASE_TAU_FIT === 'number' ? BANISTER_BASE_TAU_FIT : 47,
+  tauFat: typeof BANISTER_BASE_TAU_FAT === 'number' ? BANISTER_BASE_TAU_FAT : 6,
+  params: BANISTER_PARAMS ? {...BANISTER_PARAMS} : null,
+  series: Array.isArray(BANISTER_SERIES) ? BANISTER_SERIES.slice() : [],
+  byDay: {},
+  days: [],
+};
+
+function rebuildBanisterIndex() {
+  banisterRuntime.byDay = Object.fromEntries(banisterRuntime.series.map(s => [s.day, s]));
+  banisterRuntime.days = banisterRuntime.series.map(s => s.day).sort((a, b) => a - b);
+}
+rebuildBanisterIndex();
+
+function banisterDecay(tau) {
+  return Math.exp(-1.0 / Math.max(1e-9, tau));
+}
+
+function buildBanisterSeriesForTau(tauFit, tauFat) {
+  const loads = (typeof BANISTER_DAILY_LOADS !== 'undefined' && Array.isArray(BANISTER_DAILY_LOADS))
+    ? BANISTER_DAILY_LOADS : [];
+  if (!loads.length) return null;
+
+  const loadByDay = new Map(loads.map(row => [row.day, row.w]));
+  const minDay = Math.min(...loads.map(row => row.day), -1);
+  const kf = banisterDecay(tauFit);
+  const kn = banisterDecay(tauFat);
+
+  let fit = 0;
+  let fat = 0;
+  for (let day = minDay; day < 0; day++) {
+    const w = loadByDay.get(day) || 0;
+    fit = fit * kf + w * (1 - kf);
+    fat = fat * kn + w * (1 - kn);
+  }
+  const preDay0 = { fit, fat };
+
+  const series = [];
+  for (let day = 0; day <= GOAL_DAY; day++) {
+    const w = loadByDay.get(day) || 0;
+    fit = fit * kf + w * (1 - kf);
+    fat = fat * kn + w * (1 - kn);
+    series.push({ day, fit, fat });
+  }
+  return { series, preDay0 };
+}
+
+function fitBanisterParamsForSeries(series, preDay0) {
+  const byDay = new Map(series.map(s => [s.day, s]));
+  const preraceState = (day) => {
+    if (day <= 0) return preDay0 || { fit: 0, fat: 0 };
+    return byDay.get(day - 1) || { fit: 0, fat: 0 };
+  };
+
+  const samples = races.map(r => {
+    const st = preraceState(r.day);
+    return { day: r.day, time_s: Number(r.s), fit: Number(st.fit), fat: Number(st.fat) };
+  });
+  if (!samples.length) return null;
+  if (Math.max(...samples.map(s => s.fit)) < 0.1) return null;
+
+  const anchor = samples.reduce((a, b) => (a.day >= b.day ? a : b));
+  const goalState = byDay.get(Math.max(0, GOAL_DAY - 1));
+  if (!goalState) return null;
+
+  const goalExpectedMax = (typeof BANISTER_GOAL_EXPECTED_MAX_S === 'number')
+    ? BANISTER_GOAL_EXPECTED_MAX_S : (17 * 60 - 2);
+  const goalWeight = (typeof BANISTER_GOAL_EXPECTATION_WEIGHT === 'number')
+    ? BANISTER_GOAL_EXPECTATION_WEIGHT : 60.0;
+
+  let best = null;
+  const step = 0.05;
+  for (let k1 = 0.2; k1 <= 8.0 + 1e-9; k1 += step) {
+    for (let k2 = Math.max(0.2, 0.8 * k1); k2 <= 8.0 + 1e-9; k2 += step) {
+      let err = 0;
+      for (const s of samples) {
+        const pred = anchor.time_s - k1 * (s.fit - anchor.fit) + k2 * (s.fat - anchor.fat);
+        err += (pred - s.time_s) ** 2;
+      }
+      const p0 = anchor.time_s + k1 * anchor.fit - k2 * anchor.fat;
+      const goalPred = p0 - k1 * goalState.fit + k2 * goalState.fat;
+      if (goalPred > goalExpectedMax) {
+        err += goalWeight * (goalPred - goalExpectedMax) ** 2;
+      }
+      if (!best || err < best.err) best = { err, p0, k1, k2 };
+    }
+  }
+  if (!best) return null;
+
+  const roundTo = (v, d) => {
+    const p = 10 ** d;
+    return Math.round(v * p) / p;
+  };
+  return {
+    p0: roundTo(best.p0, 4),
+    k1: roundTo(best.k1, 6),
+    k2: roundTo(best.k2, 6),
+  };
+}
+
+function recomputeBanisterRuntime() {
+  const built = buildBanisterSeriesForTau(banisterRuntime.tauFit, banisterRuntime.tauFat);
+  if (!built) return false;
+  const params = fitBanisterParamsForSeries(built.series, built.preDay0);
+  if (!params) return false;
+  banisterRuntime.params = params;
+  banisterRuntime.series = [{ day: -1, fit: built.preDay0.fit, fat: built.preDay0.fat }, ...built.series];
+  rebuildBanisterIndex();
+  return true;
+}
+
+function getBanisterStateAtOrBefore(day) {
+  for (let i = banisterRuntime.days.length - 1; i >= 0; i--) {
+    const d = banisterRuntime.days[i];
+    if (d <= day) return banisterRuntime.byDay[d];
+  }
+  return null;
+}
+
 (function () {
   if (!BANISTER_PARAMS || !BANISTER_SERIES.length) return;
-  const {p0, k1, k2} = BANISTER_PARAMS;
-  const byDay = Object.fromEntries(BANISTER_SERIES.map(s => [s.day, s]));
-  function latestStateAtOrBefore(day) {
-    const eligibleDays = BANISTER_SERIES.filter(s => s.day <= day).map(s => s.day);
-    if (!eligibleDays.length) return null;
-    return byDay[Math.max(...eligibleDays)];
-  }
+  recomputeBanisterRuntime();
+
   function banisterPredict(t) {
-    // Align prediction with fit calibration: evaluate race at pre-race state.
+    const p = banisterRuntime.params || BANISTER_PARAMS;
     const stateDay = t <= 0 ? -1 : t - 1;
-    const row = byDay[stateDay] || latestStateAtOrBefore(stateDay);
-    return row ? p0 - k1 * row.fit + k2 * row.fat : p0;
+    const row = banisterRuntime.byDay[stateDay] || getBanisterStateAtOrBefore(stateDay);
+    return row ? p.p0 - p.k1 * row.fit + p.k2 * row.fat : p.p0;
   }
+
   MODELS.push({
     key: 'banister', label: 'Banister', color: '#e8b84b', dash: 'solid',
     predict: banisterPredict,
-    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 with a simple build \u2192 sharpen \u2192 taper load pattern from your recent 14-day average. During your taper (final 10% of campaign), FAT drops quickly while FIT is maintained \u2014 this should show improving form near race day once the model is well-calibrated from additional races. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    getDesc: () => `Fitness-fatigue model from <a href="https://www.sciepub.com/reference/340730" target="_blank" rel="noopener noreferrer">Banister et al. (1975)</a> fed by actual Strava training data. FIT (\u03c4=${banisterRuntime.tauFit.toFixed(0)}d) accumulates from TRIMP; FAT (\u03c4=${banisterRuntime.tauFat.toFixed(0)}d) decays faster. Projects to Apr 19 with a simple build \u2192 sharpen \u2192 taper load pattern from your recent 14-day average. During taper (final 10% of campaign), FAT should drop faster than FIT, which usually improves form near race day once calibration has enough race anchors. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    callout: 'Why this line is noisy: this curve is predicted 5K time (not TrainingPeaks CTL), and short-term FAT reacts quickly to daily load swings, which creates day-to-day wiggles even when longer-term fitness is rising.',
     formula: 'p(t) = p\u2080 - k\u2081\u00b7FIT(t) + k\u2082\u00b7FAT(t)',
-    terms: [
+    getTerms: () => [
       ['p(t)', 'predicted finish time at day t (seconds)'],
       ['p\u2080', 'baseline time when FIT = FAT = 0'],
       ['k\u2081', 'fitness sensitivity \u2014 how much each FIT unit speeds you up'],
-      ['FIT(t)', 'accumulated fitness; \u03c4=42d exponential moving avg of daily TRIMP'],
+      ['FIT(t)', `accumulated fitness; \u03c4=${banisterRuntime.tauFit.toFixed(0)}d exponential moving avg of daily TRIMP`],
       ['k\u2082', 'fatigue sensitivity \u2014 how much each FAT unit slows you down'],
-      ['FAT(t)', 'accumulated fatigue; \u03c4=7d exponential moving avg of daily TRIMP'],
+      ['FAT(t)', `accumulated fatigue; \u03c4=${banisterRuntime.tauFat.toFixed(0)}d exponential moving avg of daily TRIMP`],
       ['TRIMP', 'Training Impulse = duration(min) \u00d7 HR-ratio \u00d7 exp(1.92 \u00d7 HR-ratio)'],
     ],
   });
@@ -449,6 +655,7 @@ function buildToggles() {
         if (idx >= 0) selectionOrder.splice(idx, 1);
         div.classList.remove('active');
       }
+      updateBanisterControlsVisibility();
       updateChart();
       updateCards();
     };
@@ -495,8 +702,7 @@ function buildTraces() {
   });
 
   MODELS.forEach(m => {
-    const rawY = chartDays.map(t => m.predict(t));
-    const lineY = m.key === 'banister' ? trailingMean(rawY, BANISTER_SMOOTHING_DAYS) : rawY;
+    const lineY = getModelDisplaySeries(m, chartDays);
     traces.push({
       name: m.label, x: chartDates,
       y: lineY,
@@ -615,6 +821,99 @@ MODELS.forEach((m, i) => {
 });
 const BAYES_BAND_IDX = [1,2];
 
+function refreshModelTraces() {
+  if (!plotInited) return;
+  MODELS.forEach(m => {
+    const lineY = getModelDisplaySeries(m, chartDays);
+    Plotly.restyle('chart', { y: [lineY], text: [lineY.map(v => fmt(v))] }, [MODEL_TRACE_IDX[m.key]]);
+    Plotly.restyle('chart', { y: [[lineY[lineY.length - 1]]] }, [MODEL_DOT_IDX[m.key]]);
+  });
+}
+
+let tauUpdateFrame = null;
+let tauUpdateNeedsRidge = false;
+function scheduleBanisterTauUpdate(includeRidge) {
+  tauUpdateNeedsRidge = tauUpdateNeedsRidge || includeRidge;
+  if (tauUpdateFrame !== null) return;
+  tauUpdateFrame = requestAnimationFrame(() => {
+    tauUpdateFrame = null;
+    if (!recomputeBanisterRuntime()) return;
+    refreshModelTraces();
+    updateCards();
+    updateChart();
+    if (tauUpdateNeedsRidge) buildRidgePlot();
+    tauUpdateNeedsRidge = false;
+  });
+}
+
+function updateBanisterControlsVisibility() {
+  const el = document.getElementById('banisterControls');
+  if (!el) return;
+  const hasBanister = MODELS.some(m => m.key === 'banister');
+  const hasLoads = (typeof BANISTER_DAILY_LOADS !== 'undefined')
+    && Array.isArray(BANISTER_DAILY_LOADS)
+    && BANISTER_DAILY_LOADS.length > 0;
+  el.hidden = !(hasBanister && hasLoads && active.banister);
+}
+
+function buildBanisterControls() {
+  const el = document.getElementById('banisterControls');
+  if (!el) return;
+  const hasBanister = MODELS.some(m => m.key === 'banister');
+  const hasLoads = (typeof BANISTER_DAILY_LOADS !== 'undefined')
+    && Array.isArray(BANISTER_DAILY_LOADS)
+    && BANISTER_DAILY_LOADS.length > 0;
+  if (!hasBanister || !hasLoads) {
+    el.hidden = true;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="banister-controls-title">Banister Tau Tuning (reasonable range)</div>
+    <div class="banister-controls-grid">
+      <div class="banister-control-row">
+        <label for="tauFitSlider">FIT \u03c4</label>
+        <input id="tauFitSlider" type="range"
+               min="${BANISTER_TAU_LIMITS.fit.min}" max="${BANISTER_TAU_LIMITS.fit.max}" step="${BANISTER_TAU_LIMITS.fit.step}"
+               value="${banisterRuntime.tauFit}">
+        <div class="banister-control-value" id="tauFitValue">${banisterRuntime.tauFit.toFixed(0)}d</div>
+      </div>
+      <div class="banister-control-row">
+        <label for="tauFatSlider">FAT \u03c4</label>
+        <input id="tauFatSlider" type="range"
+               min="${BANISTER_TAU_LIMITS.fat.min}" max="${BANISTER_TAU_LIMITS.fat.max}" step="${BANISTER_TAU_LIMITS.fat.step}"
+               value="${banisterRuntime.tauFat}">
+        <div class="banister-control-value" id="tauFatValue">${banisterRuntime.tauFat.toFixed(0)}d</div>
+      </div>
+    </div>
+    <div class="banister-controls-note">Moving sliders updates the Banister and Ensemble curves on this page.</div>
+  `;
+
+  const fitSlider = document.getElementById('tauFitSlider');
+  const fatSlider = document.getElementById('tauFatSlider');
+  const fitValue = document.getElementById('tauFitValue');
+  const fatValue = document.getElementById('tauFatValue');
+
+  const syncValues = () => {
+    fitValue.textContent = `${banisterRuntime.tauFit.toFixed(0)}d`;
+    fatValue.textContent = `${banisterRuntime.tauFat.toFixed(0)}d`;
+  };
+
+  const onInput = () => {
+    banisterRuntime.tauFit = Number(fitSlider.value);
+    banisterRuntime.tauFat = Number(fatSlider.value);
+    syncValues();
+    scheduleBanisterTauUpdate(false);
+  };
+  const onCommit = () => scheduleBanisterTauUpdate(true);
+
+  fitSlider.addEventListener('input', onInput);
+  fatSlider.addEventListener('input', onInput);
+  fitSlider.addEventListener('change', onCommit);
+  fatSlider.addEventListener('change', onCommit);
+  updateBanisterControlsVisibility();
+}
+
 function updateGoalAnnotations() {
   if (!plotInited) return;
   const layout = buildLayout();
@@ -624,7 +923,7 @@ function updateGoalAnnotations() {
   // Collect active model predictions and de-overlap vertically
   const items = MODELS
     .filter(m => active[m.key])
-    .map(m => ({ model: m, pred: m.predict(GOAL_DAY) }))
+    .map(m => ({ model: m, pred: getModelDisplayPredictionAt(GOAL_DAY, m) }))
     .sort((a, b) => a.pred - b.pred);
 
   // Bounded two-pass packing in y-units derived from pixel spacing
@@ -734,7 +1033,7 @@ function updateCards() {
     return;
   }
   activeModels.forEach(m => {
-    const pred = m.predict(GOAL_DAY);
+    const pred = getModelDisplayPredictionAt(GOAL_DAY, m);
     const diff = pred - GOAL_S;
     const onTrack = diff < 0;
     const close = Math.abs(diff) < 45;
@@ -744,6 +1043,9 @@ function updateCards() {
       : `\u2717 Misses by ${fmt(diff)}`;
     const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - pred) / sharedUncert) * 100)));
     const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
+    const desc = getModelDescription(m);
+    const callout = getModelCallout(m);
+    const terms = getModelTerms(m);
 
     el.innerHTML += `
       <div class="card" id="card-${m.key}">
@@ -763,10 +1065,11 @@ function updateCards() {
             <span class="${cls}" style="font-weight:600;font-size:0.74rem;">${assessment}</span>
           </div>
         </div>
-        <div class="card-desc">${m.desc}</div>
+        <div class="card-desc">${desc}</div>
+        ${callout ? `<div class="model-callout">${callout}</div>` : ''}
         <div class="pred-box">
           <div class="pred-row"><span class="pred-k">Formula</span><span class="pred-v" style="font-size:0.73em;color:var(--muted)">${m.formula}</span></div>
-          ${(m.terms || []).length ? `<div style="margin-top:8px;">${(m.terms || []).map(([sym, def]) =>
+          ${terms.length ? `<div style="margin-top:8px;">${terms.map(([sym, def]) =>
             `<div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
                <span style="font-family:'JetBrains Mono','Courier New',monospace;font-size:0.69rem;color:var(--text);min-width:56px;flex-shrink:0;">${sym}</span>
                <span style="font-size:0.72rem;color:var(--muted);line-height:1.45;">${def}</span>
@@ -792,13 +1095,13 @@ function buildRidgePlot() {
     return Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
   }
 
-  const sorted = [...MODELS].sort((a, b) => b.predict(GOAL_DAY) - a.predict(GOAL_DAY));
+  const sorted = [...MODELS].sort((a, b) => getModelDisplayPredictionAt(GOAL_DAY, b) - getModelDisplayPredictionAt(GOAL_DAY, a));
 
   const traces = [];
   const annotations = [];
 
   sorted.forEach((m, i) => {
-    const mu = m.predict(GOAL_DAY);
+    const mu = getModelDisplayPredictionAt(GOAL_DAY, m);
     const yBase = i * gap;
     const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - mu) / sigma) * 100)));
     const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
@@ -920,6 +1223,7 @@ function buildRidgePlot() {
 buildWeekRow();
 buildStats();
 buildToggles();
+buildBanisterControls();
 updateCards();
 buildRidgePlot();
 initChart();

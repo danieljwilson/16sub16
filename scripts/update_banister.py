@@ -3,7 +3,7 @@
 update_banister.py — Strava → Banister fitness-fatigue pipeline.
 
 Fetches recent runs from the Strava API, computes daily TRIMP, accumulates
-FIT (τ=42d) and FAT (τ=7d) time series, fits p₀/k₁/k₂ from known race
+FIT (τ=47d) and FAT (τ=6d) time series, fits p₀/k₁/k₂ from known race
 times, then injects the result into 16sub16_tracker.html.
 
 Usage:
@@ -24,7 +24,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import zipfile
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 from pathlib import Path
 
 # ─────────────────────────────────────────────────────────
@@ -39,6 +39,7 @@ START_DATE  = date(2025, 12, 28)
 GOAL_DAY    = 112                 # Apr 19, 2026
 START_EPOCH = 1735344000          # 2025-12-28T00:00:00 UTC (approx)
 PRELOAD_DAYS = 120                # warmup lookback to seed day-0 FIT/FAT
+REFIT_REMINDER_DAY = 63           # Mar 1, 2026 checkpoint race
 
 # Race results for fitting p₀, k₁, k₂
 # day = days since START_DATE; time_s = finish time in seconds
@@ -53,8 +54,8 @@ REST_HR = 45
 MAX_HR  = 185
 
 # Banister time constants (days)
-TAU_FIT = 42.0
-TAU_FAT = 7.0
+TAU_FIT = 47.0
+TAU_FAT = 6.0
 
 # Projection settings (future days > t_today)
 # Phase-based projection: modest build, then sharpening, then taper.
@@ -439,8 +440,8 @@ def build_series(activities, t_today):
     # Aggregate TRIMP per campaign day
     trimp_by_day = {}
     for act in activities:
-        d = act["day"]
-        trimp_by_day[d] = trimp_by_day.get(d, 0.0) + act["trimp"]
+        d = int(act["day"])
+        trimp_by_day[d] = trimp_by_day.get(d, 0.0) + float(act["trimp"])
 
     # Mean daily TRIMP for the last 14 days up to t_today
     recent_days = [d for d in range(max(0, t_today - 13), t_today + 1)]
@@ -450,23 +451,16 @@ def build_series(activities, t_today):
     kf = _decay(TAU_FIT)
     kn = _decay(TAU_FAT)
 
+    # Build a complete daily load series for interactive tau recalculation in HTML.
     fit = 0.0
     fat = 0.0
     series = []
+    daily_loads = []
+    load_by_day = {}
 
     days_to_goal = max(1, GOAL_DAY - t_today)
 
-    # Warmup state from pre-campaign load so day-0 is not forced to zero state.
-    min_day = min(trimp_by_day.keys(), default=0)
-    if min_day < 0:
-        warmup_start = max(min_day, -PRELOAD_DAYS)
-        for day in range(warmup_start, 0):
-            w = trimp_by_day.get(day, 0.0)
-            fit = fit * kf + w * (1 - kf)
-            fat = fat * kn + w * (1 - kn)
-    pre_day0 = {"fit": round(fit, 4), "fat": round(fat, 4)}
-
-    for day in range(GOAL_DAY + 1):
+    for day in range(-PRELOAD_DAYS, GOAL_DAY + 1):
         if day <= t_today:
             w = trimp_by_day.get(day, 0.0)
         else:
@@ -484,12 +478,22 @@ def build_series(activities, t_today):
                     + (PROJ_TAPER_FINAL_FACTOR - PROJ_SHARPEN_LOAD_FACTOR) * taper_progress
                 )
             w = mean_trimp * max(0.0, load_factor)
+        load_by_day[day] = float(w)
+        daily_loads.append({"day": day, "w": round(float(w), 4)})
 
+    for day in range(-PRELOAD_DAYS, 0):
+        w = load_by_day.get(day, 0.0)
+        fit = fit * kf + w * (1 - kf)
+        fat = fat * kn + w * (1 - kn)
+    pre_day0 = {"fit": round(fit, 4), "fat": round(fat, 4)}
+
+    for day in range(GOAL_DAY + 1):
+        w = load_by_day.get(day, 0.0)
         fit = fit * kf + w * (1 - kf)
         fat = fat * kn + w * (1 - kn)
         series.append({"day": day, "fit": round(fit, 4), "fat": round(fat, 4)})
 
-    return series, mean_trimp, pre_day0
+    return series, mean_trimp, pre_day0, daily_loads
 
 
 def _gauss(A, b):
@@ -623,7 +627,7 @@ def fit_params(series, pre_day0=None):
 # ─────────────────────────────────────────────────────────
 # HTML INJECTION
 # ─────────────────────────────────────────────────────────
-def inject_into_html(series, params, t_today, pre_day0=None, dry_run=False):
+def inject_into_html(series, params, t_today, pre_day0=None, daily_loads=None, dry_run=False):
     """
     Replace the content between // BANISTER_DATA_START and // BANISTER_DATA_END
     markers in 16sub16_tracker.html with updated JS constants.
@@ -646,6 +650,7 @@ def inject_into_html(series, params, t_today, pre_day0=None, dry_run=False):
     series_json = json.dumps(compact, separators=(",", ":"))
 
     params_json = json.dumps(params) if params else "null"
+    loads_json = json.dumps(daily_loads or [], separators=(",", ":"))
 
     today_str = date.today().isoformat()
 
@@ -653,6 +658,12 @@ def inject_into_html(series, params, t_today, pre_day0=None, dry_run=False):
         "// BANISTER_DATA_START\n"
         f"const BANISTER_SERIES={series_json};\n"
         f"const BANISTER_PARAMS={params_json};\n"
+        f"const BANISTER_DAILY_LOADS={loads_json};\n"
+        f"const BANISTER_BASE_TAU_FIT={TAU_FIT};\n"
+        f"const BANISTER_BASE_TAU_FAT={TAU_FAT};\n"
+        f"const BANISTER_PRELOAD_DAYS={PRELOAD_DAYS};\n"
+        f"const BANISTER_GOAL_EXPECTED_MAX_S={GOAL_EXPECTED_MAX_S};\n"
+        f"const BANISTER_GOAL_EXPECTATION_WEIGHT={GOAL_EXPECTATION_WEIGHT};\n"
         f"const BANISTER_UPDATED={json.dumps(today_str)};\n"
         f"const BANISTER_UPDATED_DAY={t_today};\n"
         "// BANISTER_DATA_END"
@@ -712,6 +723,14 @@ def main():
     t_today = min(GOAL_DAY, max(0, (today - START_DATE).days))
 
     print(f"Campaign day: {t_today} / {GOAL_DAY}  ({today})")
+    if t_today < REFIT_REMINDER_DAY and not any(
+        r.get("day") == REFIT_REMINDER_DAY for r in RACE_RESULTS
+    ):
+        race_date = START_DATE + timedelta(days=REFIT_REMINDER_DAY)
+        print(
+            f"Reminder: add your {race_date.isoformat()} race result and rerun "
+            "this script to refit Banister."
+        )
 
     # --- Strava fetch (skip if env vars absent) ---
     log = load_log()
@@ -794,7 +813,7 @@ def main():
     total_trimp = sum(a["trimp"] for a in activities)
     print(f"Activities in log: {len(activities)}, total TRIMP: {total_trimp:.1f}")
 
-    series, mean_trimp, pre_day0 = build_series(activities, t_today)
+    series, mean_trimp, pre_day0, daily_loads = build_series(activities, t_today)
     print(f"14-day mean daily TRIMP (projection base load): {mean_trimp:.2f}")
 
     # --- Fit model ---
@@ -811,7 +830,14 @@ def main():
         print(f"Predicted Apr 19 finish (pre-race): {fmt_time(predicted_s)}  ({predicted_s:.0f}s)")
 
     # --- Inject HTML ---
-    inject_into_html(series, params, t_today, pre_day0=pre_day0, dry_run=args.dry_run)
+    inject_into_html(
+        series,
+        params,
+        t_today,
+        pre_day0=pre_day0,
+        daily_loads=daily_loads,
+        dry_run=args.dry_run,
+    )
 
     print("Done.")
 
