@@ -33,11 +33,9 @@ h2 {
   border-bottom: 1px solid var(--border);
 }
 .subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 36px; }
-/* Week row */
 .week-row { display: flex; gap: 5px; align-items: center; margin-bottom: 28px; }
 .week-dot { width: 12px; height: 12px; border-radius: 50%; cursor: default; }
 .week-label { font-size: 0.72rem; color: var(--muted); margin-left: 10px; }
-/* Stats — table-style with hairline borders */
 .stats {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   margin-bottom: 36px; border: 1px solid var(--border);
@@ -54,8 +52,7 @@ h2 {
   line-height: 1.1;
 }
 .stat-sub { font-size: 0.7rem; color: var(--muted); margin-top: 5px; }
-/* Toggles */
-.toggles { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .toggle {
   display: flex; align-items: center; gap: 7px;
   background: transparent; border: 1px solid var(--border);
@@ -67,21 +64,20 @@ h2 {
 .toggle.active { background: var(--text); border-color: var(--text); color: var(--bg); }
 .toggle:hover:not(.active) { border-color: var(--text); }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-/* Chart */
 .chart-wrap {
   background: var(--card); border: 1px solid var(--border);
   padding: 16px; margin-bottom: 36px;
 }
-/* Model cards — seamless grid */
 .cards {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: grid; grid-template-columns: repeat(2, 1fr);
   gap: 1px; margin-bottom: 36px;
   background: var(--border); border: 1px solid var(--border);
+  min-height: 180px;
 }
-.card { background: var(--card); padding: 20px; transition: opacity 0.2s; }
+.card { background: var(--card); padding: 20px; }
 .card-title {
   font-size: 0.7rem; font-weight: 600; display: flex; align-items: center;
-  gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+  gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
 }
 .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
 .pred-box { background: var(--bg); padding: 10px 12px; }
@@ -98,42 +94,9 @@ h2 {
 .on  { color: var(--green); }
 .off { color: var(--goal); }
 .close { color: var(--yellow); }
-/* Probability section */
 .prob-section {
   background: var(--card); border: 1px solid var(--border);
   padding: 24px; margin-bottom: 36px;
-}
-.prob-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
-.prob-item { padding: 0; }
-.prob-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-.prob-bar-bg { height: 3px; background: var(--border); overflow: hidden; }
-.prob-bar-fill { height: 100%; transition: width 0.6s; }
-.prob-val { font-size: 0.76rem; font-weight: 600; margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
-/* Data section */
-.data-section {
-  background: var(--card); border: 1px solid var(--border);
-  padding: 24px; margin-bottom: 36px;
-}
-.data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 16px; }
-.data-item { border-left: 2px solid var(--border); padding-left: 16px; }
-.data-item.req { border-left-color: var(--green); }
-.data-item.opt { border-left-color: var(--purple); }
-.data-item h4 { font-size: 0.78rem; margin-bottom: 8px; font-weight: 600; }
-.data-item ul { font-size: 0.75rem; color: var(--muted); padding-left: 14px; line-height: 1.9; }
-/* Insight box */
-.insight-box {
-  background: #f3faf5; border: 1px solid #c8dfc8;
-  border-left: 3px solid var(--green);
-  padding: 18px 20px; margin-bottom: 36px; font-size: 0.84rem; line-height: 1.75;
-}
-.insight-box h3 {
-  color: var(--green); margin-bottom: 10px; font-size: 0.68rem;
-  text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
-}
-footer {
-  color: var(--muted); font-size: 0.65rem; text-align: center;
-  padding-top: 18px; border-top: 1px solid var(--border);
-  margin-top: 24px; text-transform: uppercase; letter-spacing: 1.5px;
 }
 </style>
 </head>
@@ -147,6 +110,7 @@ footer {
 <div class="stats" id="statsBar"></div>
 
 <div class="toggles" id="toggles"></div>
+<p style="font-size:0.68rem;color:var(--muted);margin-bottom:14px;">Select up to 2 models to compare — clicking a third swaps out the oldest selection.</p>
 
 <div class="chart-wrap">
   <div id="chart" style="height:490px;"></div>
@@ -155,69 +119,9 @@ footer {
 <div class="cards" id="cards"></div>
 
 <div class="prob-section">
-  <h2>Goal Probability at Apr 19 by Model</h2>
-  <p style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">
-    P(finish &lt; 16:00) estimated using each model's predicted time ± shared forecast uncertainty (~75s at goal race).
-    Wider uncertainty = more honest; updates with each new race result.
-  </p>
-  <div class="prob-grid" id="probGrid"></div>
-  <p style="font-size:0.64rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2.5px;padding-top:24px;padding-bottom:8px;border-top:1px solid var(--border);margin-top:20px;">Predicted Finish Time — Distribution by Model</p>
-  <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Gaussian centered on each model's Apr 19 prediction, width = shared forecast uncertainty (σ ≈ 75 s). Darker shading = P(sub-16:00). Models sorted optimistic → pessimistic.</p>
-  <div id="ridgePlot" style="height:340px;"></div>
-</div>
-
-<div class="insight-box">
-  <h3>📍 Where Things Stand (Week 7)</h3>
-  <p>You've improved <strong>2:02</strong> (10.4%) in 49 days — impressive, especially the initial jump. Most models put your Apr 19 projection
-  between <strong>16:20 and 17:30</strong>, with the linear model (which is pulled optimistic by the big Marseille→Nice jump)
-  the only one predicting a sub-16. The honest read: you need to continue improving at close to the Bayesian/conservative rate
-  to hit the goal. Each upcoming race — Cagnes sur Mer (Day 63), La Calvaire (Day 91) — is a crucial update.
-  A time around <strong>16:50 in Cagnes</strong> would put all models within striking distance.</p>
-</div>
-
-<div class="data-section">
-  <h2>📊 Data You Need — Now & Going Forward</h2>
-  <div class="data-grid">
-    <div class="data-item req">
-      <h4>🟢 Already tracked (all models)</h4>
-      <ul>
-        <li>Race date &amp; location</li>
-        <li>Finish time (MM:SS)</li>
-        <li>Days from start</li>
-      </ul>
-    </div>
-    <div class="data-item opt">
-      <h4>🟣 Banister Model (full version)</h4>
-      <ul>
-        <li>Daily training duration (minutes)</li>
-        <li>Avg heart rate per session</li>
-        <li>Session type: easy / tempo / interval / race</li>
-        <li>Computes TRIMP = duration × HR × factor</li>
-        <li>Separates fitness gain from fatigue</li>
-      </ul>
-    </div>
-    <div class="data-item opt">
-      <h4>🟣 Critical Speed Model <span style="font-weight:400;color:var(--muted);font-size:0.7em;">(not yet active — not shown in chart)</span></h4>
-      <ul>
-        <li>Requires maximal efforts at ≥2 distances</li>
-        <li>e.g. a 1K time trial + any 5K race</li>
-        <li>CS = (d₂−d₁) / (t₂−t₁) in m/s</li>
-        <li>D′ = anaerobic work capacity (metres)</li>
-        <li>Predicts: t = (d − D′) / CS at any distance</li>
-        <li>Add your 1K PB to unlock this model</li>
-      </ul>
-    </div>
-    <div class="data-item opt">
-      <h4>🟣 Bayesian Model (improves with)</h4>
-      <ul>
-        <li>Each additional race result (auto-updates)</li>
-        <li>Morning HRV (recovery proxy)</li>
-        <li>Session RPE (1–10 effort ratings)</li>
-        <li>Weekly mileage / hours</li>
-        <li>Narrows uncertainty bands over time</li>
-      </ul>
-    </div>
-  </div>
+  <h2>Predicted Finish Time — Distribution by Model</h2>
+  <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Gaussian centered on each model's Apr 19 prediction, σ = shared forecast uncertainty (~75 s). Darker shading = P(sub-16:00). Vertical line = mean prediction. Models sorted optimistic → pessimistic.</p>
+  <div id="ridgePlot" style="height:420px;"></div>
 </div>
 
 <footer id="footer">16sub16 tracker · Built with Plotly.js</footer>
@@ -228,10 +132,10 @@ footer {
 
 <script>
 // BANISTER_DATA_START
-const BANISTER_SERIES=[{"day":0,"fit":3.1619,"fat":17.8899},{"day":1,"fit":3.0875,"fat":15.5083},{"day":2,"fit":3.0149,"fat":13.4438},{"day":3,"fit":4.7795,"fat":22.04},{"day":4,"fit":4.6671,"fat":19.1059},{"day":5,"fit":7.1603,"fat":31.2901},{"day":6,"fit":8.0062,"fat":32.864},{"day":7,"fit":11.0207,"fat":46.6111},{"day":8,"fit":10.7614,"fat":40.4061},{"day":9,"fit":10.5082,"fat":35.0272},{"day":10,"fit":12.5265,"fat":43.1825},{"day":11,"fit":16.2568,"fat":60.2074},{"day":12,"fit":18.0185,"fat":64.3244},{"day":13,"fit":17.5946,"fat":55.7614},{"day":14,"fit":17.1806,"fat":48.3383},{"day":15,"fit":16.7764,"fat":41.9034},{"day":16,"fit":20.6593,"fat":60.5277},{"day":17,"fit":22.0736,"fat":63.2224},{"day":18,"fit":21.5542,"fat":54.8061},{"day":19,"fit":23.6887,"fat":62.4565},{"day":20,"fit":23.1314,"fat":54.1421},{"day":21,"fit":22.5871,"fat":46.9346},{"day":22,"fit":25.1671,"fat":58.2908},{"day":23,"fit":24.575,"fat":50.531},{"day":24,"fit":26.1397,"fat":55.9288},{"day":25,"fit":28.4857,"fat":65.237},{"day":26,"fit":31.1175,"fat":75.2352},{"day":27,"fit":33.4124,"fat":82.3464},{"day":28,"fit":34.0061,"fat":79.1915},{"day":29,"fit":33.206,"fat":68.6493},{"day":30,"fit":36.3722,"fat":81.8454},{"day":31,"fit":35.5165,"fat":70.95},{"day":32,"fit":37.008,"fat":74.6722},{"day":33,"fit":40.0396,"fat":86.8108},{"day":34,"fit":39.0975,"fat":75.2544},{"day":35,"fit":38.1776,"fat":65.2363},{"day":36,"fit":40.2644,"fat":73.4411},{"day":37,"fit":43.4487,"fat":87.041},{"day":38,"fit":44.9188,"fat":89.5554},{"day":39,"fit":45.7538,"fat":88.3381},{"day":40,"fit":47.4,"fat":91.9834},{"day":41,"fit":49.7732,"fat":99.4757},{"day":42,"fit":48.6021,"fat":86.2333},{"day":43,"fit":50.179,"fat":90.1453},{"day":44,"fit":50.4944,"fat":86.6097},{"day":45,"fit":49.3064,"fat":75.08},{"day":46,"fit":52.851,"fat":91.7044},{"day":47,"fit":53.4827,"fat":90.1062},{"day":48,"fit":53.8021,"fat":87.038},{"day":49,"fit":55.8979,"fat":94.4715},{"day":50,"fit":56.9718,"fat":95.4129},{"day":51,"fit":58.0205,"fat":96.2289},{"day":52,"fit":59.0445,"fat":96.9363},{"day":53,"fit":60.0444,"fat":97.5496},{"day":54,"fit":61.0208,"fat":98.0812},{"day":55,"fit":61.9743,"fat":98.542},{"day":56,"fit":62.9052,"fat":98.9415},{"day":57,"fit":63.8143,"fat":99.2878},{"day":58,"fit":64.702,"fat":99.588},{"day":59,"fit":65.5688,"fat":99.8482},{"day":60,"fit":66.4152,"fat":100.0738},{"day":61,"fit":67.2417,"fat":100.2694},{"day":62,"fit":68.0488,"fat":100.4389},{"day":63,"fit":68.8368,"fat":100.5859},{"day":64,"fit":69.6063,"fat":100.7133},{"day":65,"fit":70.3577,"fat":100.8237},{"day":66,"fit":71.0915,"fat":100.9194},{"day":67,"fit":71.8079,"fat":101.0024},{"day":68,"fit":72.5076,"fat":101.0744},{"day":69,"fit":73.1907,"fat":101.1367},{"day":70,"fit":73.8578,"fat":101.1908},{"day":71,"fit":74.5092,"fat":101.2377},{"day":72,"fit":75.1452,"fat":101.2783},{"day":73,"fit":75.7663,"fat":101.3135},{"day":74,"fit":76.3728,"fat":101.344},{"day":75,"fit":76.965,"fat":101.3705},{"day":76,"fit":77.5433,"fat":101.3935},{"day":77,"fit":78.108,"fat":101.4133},{"day":78,"fit":78.6593,"fat":101.4306},{"day":79,"fit":79.1977,"fat":101.4455},{"day":80,"fit":79.7235,"fat":101.4585},{"day":81,"fit":80.2369,"fat":101.4697},{"day":82,"fit":80.7382,"fat":101.4795},{"day":83,"fit":81.2277,"fat":101.4879},{"day":84,"fit":81.7056,"fat":101.4952},{"day":85,"fit":82.1724,"fat":101.5016},{"day":86,"fit":82.6281,"fat":101.5071},{"day":87,"fit":83.0732,"fat":101.5118},{"day":88,"fit":83.5077,"fat":101.516},{"day":89,"fit":83.9321,"fat":101.5195},{"day":90,"fit":84.3464,"fat":101.5226},{"day":91,"fit":84.751,"fat":101.5253},{"day":92,"fit":85.1461,"fat":101.5277},{"day":93,"fit":85.5319,"fat":101.5297},{"day":94,"fit":85.9086,"fat":101.5314},{"day":95,"fit":86.2764,"fat":101.533},{"day":96,"fit":86.6356,"fat":101.5343},{"day":97,"fit":86.9864,"fat":101.5354},{"day":98,"fit":87.3289,"fat":101.5364},{"day":99,"fit":87.6633,"fat":101.5373},{"day":100,"fit":87.9899,"fat":101.538},{"day":101,"fit":88.3087,"fat":101.5387},{"day":102,"fit":88.6201,"fat":101.5392},{"day":103,"fit":88.9242,"fat":101.5397},{"day":104,"fit":89.2211,"fat":101.5401},{"day":105,"fit":89.511,"fat":101.5405},{"day":106,"fit":89.7941,"fat":101.5408},{"day":107,"fit":90.0705,"fat":101.5411},{"day":108,"fit":90.3404,"fat":101.5413},{"day":109,"fit":90.604,"fat":101.5415},{"day":110,"fit":90.8614,"fat":101.5417},{"day":111,"fit":91.1127,"fat":101.5419},{"day":112,"fit":91.3581,"fat":101.542}];
-const BANISTER_PARAMS={"p0": 1228.115, "k1": 3.12476, "k2": 3.74486};
-const BANISTER_UPDATED="2026-02-15";
-const BANISTER_UPDATED_DAY=49;
+const BANISTER_SERIES=[{"day":0,"fit":3.1619,"fat":17.8899},{"day":1,"fit":3.0875,"fat":15.5083},{"day":2,"fit":3.0149,"fat":13.4438},{"day":3,"fit":4.7795,"fat":22.04},{"day":4,"fit":4.6671,"fat":19.1059},{"day":5,"fit":7.1603,"fat":31.2901},{"day":6,"fit":8.0062,"fat":32.864},{"day":7,"fit":11.0207,"fat":46.6111},{"day":8,"fit":10.7614,"fat":40.4061},{"day":9,"fit":10.5082,"fat":35.0272},{"day":10,"fit":12.5265,"fat":43.1825},{"day":11,"fit":16.2568,"fat":60.2074},{"day":12,"fit":18.0185,"fat":64.3244},{"day":13,"fit":17.5946,"fat":55.7614},{"day":14,"fit":17.1806,"fat":48.3383},{"day":15,"fit":16.7764,"fat":41.9034},{"day":16,"fit":20.6593,"fat":60.5277},{"day":17,"fit":22.0736,"fat":63.2224},{"day":18,"fit":21.5542,"fat":54.8061},{"day":19,"fit":23.6887,"fat":62.4565},{"day":20,"fit":23.1314,"fat":54.1421},{"day":21,"fit":22.5871,"fat":46.9346},{"day":22,"fit":25.1671,"fat":58.2908},{"day":23,"fit":24.575,"fat":50.531},{"day":24,"fit":26.1397,"fat":55.9288},{"day":25,"fit":28.4857,"fat":65.237},{"day":26,"fit":31.1175,"fat":75.2352},{"day":27,"fit":33.4124,"fat":82.3464},{"day":28,"fit":34.0061,"fat":79.1915},{"day":29,"fit":33.206,"fat":68.6493},{"day":30,"fit":36.3722,"fat":81.8454},{"day":31,"fit":35.5165,"fat":70.95},{"day":32,"fit":37.008,"fat":74.6722},{"day":33,"fit":40.0396,"fat":86.8108},{"day":34,"fit":39.0975,"fat":75.2544},{"day":35,"fit":38.1776,"fat":65.2363},{"day":36,"fit":40.2644,"fat":73.4411},{"day":37,"fit":43.4487,"fat":87.041},{"day":38,"fit":44.9188,"fat":89.5554},{"day":39,"fit":45.7538,"fat":88.3381},{"day":40,"fit":47.4,"fat":91.9834},{"day":41,"fit":49.7732,"fat":99.4757},{"day":42,"fit":48.6021,"fat":86.2333},{"day":43,"fit":50.179,"fat":90.1453},{"day":44,"fit":50.4944,"fat":86.6097},{"day":45,"fit":49.3064,"fat":75.08},{"day":46,"fit":52.851,"fat":91.7044},{"day":47,"fit":53.4827,"fat":90.1062},{"day":48,"fit":53.8021,"fat":87.038},{"day":49,"fit":55.8979,"fat":94.4715},{"day":50,"fit":54.5827,"fat":81.8953},{"day":51,"fit":55.6485,"fat":84.2893},{"day":52,"fit":56.6891,"fat":86.3647},{"day":53,"fit":57.7053,"fat":88.1638},{"day":54,"fit":58.6976,"fat":89.7234},{"day":55,"fit":59.6665,"fat":91.0753},{"day":56,"fit":60.6127,"fat":92.2473},{"day":57,"fit":61.5365,"fat":93.2633},{"day":58,"fit":62.4387,"fat":94.144},{"day":59,"fit":63.3196,"fat":94.9075},{"day":60,"fit":64.1798,"fat":95.5693},{"day":61,"fit":65.0197,"fat":96.1431},{"day":62,"fit":65.8399,"fat":96.6404},{"day":63,"fit":66.6408,"fat":97.0716},{"day":64,"fit":67.4228,"fat":97.4453},{"day":65,"fit":68.1865,"fat":97.7693},{"day":66,"fit":68.9322,"fat":98.0502},{"day":67,"fit":69.6603,"fat":98.2937},{"day":68,"fit":70.3713,"fat":98.5047},{"day":69,"fit":71.0656,"fat":98.6877},{"day":70,"fit":71.7435,"fat":98.8463},{"day":71,"fit":72.4055,"fat":98.9838},{"day":72,"fit":73.0519,"fat":99.103},{"day":73,"fit":73.6831,"fat":99.2063},{"day":74,"fit":74.2994,"fat":99.2959},{"day":75,"fit":74.9013,"fat":99.3735},{"day":76,"fit":75.489,"fat":99.4409},{"day":77,"fit":76.0628,"fat":99.4992},{"day":78,"fit":76.6232,"fat":99.5498},{"day":79,"fit":77.1704,"fat":99.5936},{"day":80,"fit":77.7047,"fat":99.6316},{"day":81,"fit":78.2264,"fat":99.6646},{"day":82,"fit":78.7359,"fat":99.6932},{"day":83,"fit":79.2333,"fat":99.7179},{"day":84,"fit":79.7191,"fat":99.7394},{"day":85,"fit":80.1934,"fat":99.758},{"day":86,"fit":80.6566,"fat":99.7741},{"day":87,"fit":81.1089,"fat":99.7881},{"day":88,"fit":81.5505,"fat":99.8002},{"day":89,"fit":81.9817,"fat":99.8107},{"day":90,"fit":82.4028,"fat":99.8199},{"day":91,"fit":82.814,"fat":99.8277},{"day":92,"fit":83.2155,"fat":99.8346},{"day":93,"fit":83.6076,"fat":99.8405},{"day":94,"fit":83.6423,"fat":97.8759},{"day":95,"fit":83.6762,"fat":96.1728},{"day":96,"fit":83.7093,"fat":94.6964},{"day":97,"fit":83.7416,"fat":93.4165},{"day":98,"fit":83.7731,"fat":92.307},{"day":99,"fit":83.8039,"fat":91.3453},{"day":100,"fit":83.834,"fat":90.5115},{"day":101,"fit":83.8634,"fat":89.7888},{"day":102,"fit":83.892,"fat":89.1622},{"day":103,"fit":83.92,"fat":88.6191},{"day":104,"fit":83.9474,"fat":88.1483},{"day":105,"fit":83.9741,"fat":87.7401},{"day":106,"fit":83.9777,"fat":87.2592},{"day":107,"fit":83.8689,"fat":86.2069},{"day":108,"fit":83.6504,"fat":84.6593},{"day":109,"fit":83.3247,"fat":82.6822},{"day":110,"fit":82.8944,"fat":80.333},{"day":111,"fit":82.3619,"fat":77.661},{"day":112,"fit":81.7296,"fat":74.7094}];
+const BANISTER_PARAMS={"p0": 1142.9199, "k1": 1.95, "k2": 0.1};
+const BANISTER_UPDATED="2026-02-16";
+const BANISTER_UPDATED_DAY=50;
 // BANISTER_DATA_END
 
 // ─────────────────────────────────────────────────────────
@@ -240,7 +144,6 @@ const BANISTER_UPDATED_DAY=49;
 const START = new Date('2025-12-28');
 const GOAL_S = 960;   // 16:00 in seconds
 const GOAL_DAY = 112; // Apr 19, 2026
-// Auto-calculate current day from today's date
 const TODAY_DAY = Math.min(GOAL_DAY, Math.max(0, Math.floor((new Date() - START) / (1000*60*60*24))));
 
 const races = [
@@ -267,7 +170,6 @@ function dayToDate(d) {
   const dt = new Date(START); dt.setDate(dt.getDate()+d); return dt;
 }
 function normCDF(z) {
-  // Abramowitz & Stegun approximation
   const t = 1/(1+0.2316419*Math.abs(z));
   const p = t*(0.31938153+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
   const phi = Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
@@ -279,7 +181,6 @@ function normCDF(z) {
 // MODELS
 // ─────────────────────────────────────────────────────────
 
-// OLS linear regression
 function ols(xs, ys) {
   const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
   const Sxx=xs.reduce((s,x)=>s+(x-mx)**2,0), Sxy=xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
@@ -291,28 +192,18 @@ function ols(xs, ys) {
 
 const xs = races.map(r=>r.day), ys = races.map(r=>r.s);
 
-// 1. Linear (all 3 points)
 const linFit = ols(xs, ys);
 
-// 2. Log-linear: y = a + b·ln(t+1)
 const lnxs = xs.map(x=>Math.log(x+1));
 const logFit = ols(lnxs, ys);
 const logPred = t => logFit.a + logFit.b*Math.log(t+1);
 
-// 3. Exponential decay: y = B + A·exp(-k·t) — 2D grid search over (B, k)
-// B is the asymptote (physiological ceiling approached as t→∞).
-// Previous version forced B = y0 − A, which anchored to the day-0 baseline and
-// caused the exact-fit solution to place the asymptote at ≈ the current best time
-// (giving near-zero predicted future improvement). Instead we now search B freely
-// with a minimum headroom of 60 s below the current best, then solve analytically
-// for the best-fit A via OLS for each (B, k) pair.
 function fitExp(xs, ys) {
   let best = {err: Infinity, A: 200, k: 0.05, B: 900};
   const yMin = Math.min(...ys);
   for (let B = 800; B <= yMin - 60; B += 5) {
     for (let logk = -4; logk <= 0; logk += 0.05) {
       const k = Math.pow(10, logk);
-      // Analytic least-squares solution for A given (B, k)
       const eks = xs.map(x => Math.exp(-k * x));
       const A = xs.reduce((s, _, i) => s + (ys[i] - B) * eks[i], 0)
                / eks.reduce((s, e) => s + e * e, 0);
@@ -325,80 +216,62 @@ function fitExp(xs, ys) {
 }
 const expFit = fitExp(xs, ys);
 
-// 4. Conservative: linear through last 2 races only
 const consFit = ols([races[1].day, races[2].day], [races[1].s, races[2].s]);
 
-// 5. Bayesian: prior slope -1.5 s/day ± 1.2, blended with OLS estimate
 const prior_mu = -1.5, prior_sig = 1.2;
 const data_mu  = linFit.b, data_sig = linFit.sigma/Math.sqrt(Math.max(1,linFit.Sxx));
 const post_var = 1/(1/prior_sig**2 + 1/data_sig**2);
 const post_sig = Math.sqrt(post_var);
 const post_mu  = post_var*(prior_mu/prior_sig**2 + data_mu/data_sig**2);
-const bayesIntercept = races[0].s; // anchor to first race
+const bayesIntercept = races[0].s;
 const bayesPred = t => bayesIntercept + post_mu*t;
 
-// Forecast uncertainty (grows with time extrapolated beyond last race)
 function bayesUncert(t) {
   const horizon = Math.max(0, t - TODAY_DAY);
   return Math.sqrt(post_sig**2 * horizon**2 + linFit.sigma**2);
 }
 
-// Shared forecast uncertainty for probability calc
-const sharedUncert = bayesUncert(GOAL_DAY); // ~75s
+const sharedUncert = bayesUncert(GOAL_DAY);
 
-// ─────────────────────────────────────────────────────────
-// MODEL REGISTRY
-// ─────────────────────────────────────────────────────────
 const MODELS = [
   {
     key: 'linear', label: 'Linear', color: '#58a6ff', dash: 'solid',
     predict: t => linFit.predict(t),
-    desc: 'OLS line through all 3 race times. Constant improvement rate. Pulled optimistic by large Marseille→Nice jump.',
-    formula: 'y = a + b·t',
-    dataNeed: 'Race times only',
-    limit: 'Ignores physiological limits & diminishing returns',
+    desc: 'OLS line through all 3 race times. Constant improvement rate. Pulled optimistic by large Marseille\u2192Nice jump.',
+    formula: 'y = a + b\u00b7t',
   },
   {
     key: 'log', label: 'Log-Linear', color: '#3fb950', dash: 'solid',
     predict: t => logPred(t),
-    desc: 'Performance ∝ log(training time). Fast early gains slow over time — well-supported by sports science. Reflects neural → aerobic adaptation shift.',
-    formula: 'y = a + b·ln(t+1)',
-    dataNeed: 'Race times only',
-    limit: 'Does not account for training load variation or illness',
+    desc: 'Performance \u221d log(training time). Fast early gains slow over time \u2014 well-supported by sports science. Reflects neural \u2192 aerobic adaptation shift.',
+    formula: 'y = a + b\u00b7ln(t+1)',
   },
   {
     key: 'exp', label: 'Exp. Saturation', color: '#f0883e', dash: 'solid',
     predict: t => expFit.predict(t),
-    desc: 'Performance decays exponentially toward an asymptote B (your physiological ceiling). B is fit freely — constrained to ≥60 s below your current best — so the model cannot conclude you\'ve already plateaued. Without this floor, 3 data points with a fast-then-slow pattern mathematically force B ≈ current time and predict near-zero future gain.',
-    formula: 'y = B + A·e^(−k·t)',
-    dataNeed: 'Race times only (true Banister model needs daily TRIMP load)',
-    limit: 'Asymptote floor is a prior assumption. Will sharpen with each new race.',
+    desc: 'Performance decays exponentially toward an asymptote B (your physiological ceiling). B is fit freely \u2014 constrained to \u226560 s below your current best \u2014 so the model cannot conclude you\'ve already plateaued.',
+    formula: 'y = B + A\u00b7e^(\u2212k\u00b7t)',
   },
   {
     key: 'bayes', label: 'Bayesian', color: '#bc8cff', dash: 'solid',
     predict: t => bayesPred(t),
-    desc: 'Prior: trained endurance athlete new to running improves ~1.5 s/day on average. Updated with each race. Shows uncertainty bands (±1σ, ±2σ) that narrow as more races are run.',
-    formula: 'posterior ∝ likelihood × prior',
-    dataNeed: 'Race times + literature priors; improves with HRV/RPE',
-    limit: 'Only 3 data points; bands are wide — will tighten after Cagnes & La Calvaire',
+    desc: 'Prior: trained endurance athlete new to running improves ~1.5 s/day on average. Updated with each race. Shows uncertainty bands (\u00b11\u03c3, \u00b12\u03c3) that narrow as more races are run.',
+    formula: 'posterior \u221d likelihood \u00d7 prior',
   },
   {
     key: 'cons', label: 'Conservative Linear', color: '#ff7b72', dash: 'dash',
     predict: t => consFit.predict(t),
-    desc: 'Linear fit through Nice + Monaco only — removes the "pop" from Marseille. Represents the scenario where the current slower improvement rate continues.',
-    formula: 'y = a + b·t  [last 2 races]',
-    dataNeed: 'Race times only',
-    limit: 'Based on 2 points only; very sensitive to next race result',
+    desc: 'Linear fit through Nice + Monaco only \u2014 removes the \u201cpop\u201d from Marseille. Represents the scenario where the current slower improvement rate continues.',
+    formula: 'y = a + b\u00b7t  [last 2 races]',
   },
 ];
 
-// Banister model — active only after Strava data is injected
+// Banister model
 (function () {
   if (!BANISTER_PARAMS || !BANISTER_SERIES.length) return;
   const {p0, k1, k2} = BANISTER_PARAMS;
   const byDay = Object.fromEntries(BANISTER_SERIES.map(s => [s.day, s]));
   function banisterPredict(t) {
-    // find nearest day ≤ t in series
     let row = byDay[t];
     if (!row) {
       const d = Math.max(...BANISTER_SERIES.filter(s => s.day <= t).map(s => s.day));
@@ -409,16 +282,31 @@ const MODELS = [
   MODELS.push({
     key: 'banister', label: 'Banister', color: '#e8b84b', dash: 'solid',
     predict: banisterPredict,
-    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (τ=42d) accumulates from TRIMP; FAT (τ=7d) decays faster. Projects to Apr 19 at your recent average daily load. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
-    formula: 'p(t) = p₀ + k₁·FIT(t) − k₂·FAT(t)',
-    dataNeed: 'Strava runs with HR monitor (auto-fetched daily via GitHub Actions)',
-    limit: 'Projects FIT/FAT forward at 14-day average TRIMP. Improves with each race.',
+    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 at your recent average daily load. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    formula: 'p(t) = p\u2080 + k\u2081\u00b7FIT(t) \u2212 k\u2082\u00b7FAT(t)',
   });
 })();
 
-// Active state
+// Ensemble average
+(function () {
+  const baseModels = [...MODELS];
+  MODELS.push({
+    key: 'ensemble', label: 'Ensemble Avg', color: '#9e9e9e', dash: 'dashdot',
+    predict: t => baseModels.reduce((sum, m) => sum + m.predict(t), 0) / baseModels.length,
+    desc: `Simple equal-weighted average of all ${baseModels.length} models. Consensus estimate \u2014 reduces dependence on any single model's assumptions. Pulls the optimistic Linear down and the pessimistic Banister up toward a balanced middle ground.`,
+    formula: `avg(${baseModels.length} models)`,
+  });
+})();
+
+// ─────────────────────────────────────────────────────────
+// Active state — max 2 models; start with Linear + Log-Linear
+// ─────────────────────────────────────────────────────────
 const active = {};
-MODELS.forEach(m => active[m.key] = true);
+const selectionOrder = [];
+MODELS.forEach((m, i) => {
+  active[m.key] = i < 2;
+  if (i < 2) selectionOrder.push(m.key);
+});
 
 // ─────────────────────────────────────────────────────────
 // WEEK PROGRESS
@@ -438,8 +326,7 @@ function buildWeekRow() {
   }
   const lbl = document.createElement('span');
   lbl.className = 'week-label';
-  const currentWeekDisplay = Math.min(16, Math.max(1, Math.ceil((TODAY_DAY + 1) / 7)));
-  lbl.textContent = `Week ${currentWeekDisplay} of 16`;
+  lbl.textContent = `Week ${currentWeek} of 16`;
   el.appendChild(lbl);
 }
 
@@ -453,12 +340,12 @@ function buildStats() {
   const pct = (totalImprove / races[0].s * 100).toFixed(1);
   const daysLeft = GOAL_DAY - TODAY_DAY;
   const items = [
-    { label:'Current Best', val: fmt(last.s), sub: `${last.name} · ${last.date.slice(5).replace('-','/')}`, color: 'var(--accent)' },
-    { label:'Goal',         val: '16:00',     sub: 'Apr 19 · Nice Semi',     color: 'var(--goal)' },
+    { label:'Current Best', val: fmt(last.s), sub: `${last.name} \u00b7 ${last.date.slice(5).replace('-','/')}`, color: 'var(--accent)' },
+    { label:'Goal',         val: '16:00',     sub: 'Apr 19 \u00b7 Nice Semi',     color: 'var(--goal)' },
     { label:'Gap to Goal',  val: fmt(gap),    sub: `${gap}s still needed`,   color: 'var(--yellow)' },
     { label:'Total Improved', val: `-${fmt(totalImprove)}`, sub: `${pct}% in 49 days`, color: 'var(--green)' },
-    { label:'Days Left',    val: `${daysLeft}`,  sub: `${upcoming.filter(r=>r.day>TODAY_DAY).length} races remaining`,   color: 'var(--blue)' },
-    { label:'Week',         val: `${Math.min(16, Math.max(1, Math.ceil((TODAY_DAY+1)/7)))} / 16`, sub: 'currently in training',  color: 'var(--purple)' },
+    { label:'Days Left',    val: `${daysLeft}`,  sub: `${upcoming.filter(r=>r.day>TODAY_DAY).length} races remaining`, color: 'var(--blue)' },
+    { label:'Week',         val: `${Math.min(16, Math.max(1, Math.ceil((TODAY_DAY+1)/7)))} / 16`, sub: 'currently in training', color: 'var(--purple)' },
   ];
   const el = document.getElementById('statsBar');
   items.forEach(it => {
@@ -471,20 +358,33 @@ function buildStats() {
 }
 
 // ─────────────────────────────────────────────────────────
-// TOGGLES
+// TOGGLES — max 2; third click deselects oldest
 // ─────────────────────────────────────────────────────────
 function buildToggles() {
   const el = document.getElementById('toggles');
   MODELS.forEach(m => {
     const div = document.createElement('div');
-    div.className = 'toggle active';
+    div.className = 'toggle' + (active[m.key] ? ' active' : '');
     div.dataset.key = m.key;
     div.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.label}`;
     div.onclick = () => {
-      active[m.key] = !active[m.key];
-      div.classList.toggle('active', active[m.key]);
+      if (!active[m.key]) {
+        if (selectionOrder.length >= 2) {
+          const toDeselect = selectionOrder.shift();
+          active[toDeselect] = false;
+          document.querySelector(`.toggle[data-key="${toDeselect}"]`).classList.remove('active');
+        }
+        active[m.key] = true;
+        selectionOrder.push(m.key);
+        div.classList.add('active');
+      } else {
+        active[m.key] = false;
+        const idx = selectionOrder.indexOf(m.key);
+        if (idx >= 0) selectionOrder.splice(idx, 1);
+        div.classList.remove('active');
+      }
       updateChart();
-      document.getElementById('card-'+m.key).style.opacity = active[m.key] ? '1' : '0.35';
+      updateCards();
     };
     el.appendChild(div);
   });
@@ -500,67 +400,56 @@ function initChartAxes() {
 }
 
 function buildTraces() {
-  // y-axis labels
-  const yticks=[], ylabels=[];
-  for (let s=900; s<=1220; s+=30) { yticks.push(s); ylabels.push(fmt(s)); }
-
   const traces = [];
 
-  // Goal line
   traces.push({
-    name:'🎯 16:00 Goal', x:[dayToDate(0),dayToDate(GOAL_DAY)], y:[GOAL_S,GOAL_S],
+    name:'\ud83c\udfaf 16:00 Goal', x:[dayToDate(0),dayToDate(GOAL_DAY)], y:[GOAL_S,GOAL_S],
     mode:'lines', line:{color:'#f85149',dash:'dot',width:1.5}, hoverinfo:'skip',
     showlegend:false
   });
 
-  // Today vertical line as shape (done in layout)
-
-  // Bayesian bands (±2σ then ±1σ) — always render but toggle via opacity via updateChart
   const bu2 = chartDays.map(t=>bayesPred(t)+2*bayesUncert(t));
   const bl2 = chartDays.map(t=>bayesPred(t)-2*bayesUncert(t));
   const bu1 = chartDays.map(t=>bayesPred(t)+1*bayesUncert(t));
   const bl1 = chartDays.map(t=>bayesPred(t)-1*bayesUncert(t));
 
   traces.push({
-    name:'Bayesian ±2σ',
+    name:'Bayesian \u00b12\u03c3',
     x:[...chartDates,...chartDates.slice().reverse()],
     y:[...bu2,...bl2.slice().reverse()],
     fill:'toself', fillcolor:'rgba(188,140,255,0.08)', line:{color:'transparent'},
     showlegend:false, hoverinfo:'skip'
   });
   traces.push({
-    name:'Bayesian ±1σ',
+    name:'Bayesian \u00b11\u03c3',
     x:[...chartDates,...chartDates.slice().reverse()],
     y:[...bu1,...bl1.slice().reverse()],
     fill:'toself', fillcolor:'rgba(188,140,255,0.14)', line:{color:'transparent'},
     showlegend:false, hoverinfo:'skip'
   });
 
-  // Model lines
   MODELS.forEach(m => {
     traces.push({
       name: m.label, x: chartDates,
       y: chartDays.map(t => m.predict(t)),
-      mode:'lines', line:{color:m.color, dash:m.dash, width:2},
+      mode:'lines', line:{color:m.color, dash:m.dash, width: m.key === 'ensemble' ? 2.5 : 2},
       hovertemplate: m.label+': %{text}<extra></extra>',
       text: chartDays.map(t=>fmt(m.predict(t))),
     });
   });
 
-  // Future race markers
   traces.push({
     name:'Upcoming Races',
     x: upcoming.map(r=>dayToDate(r.day)),
     y: upcoming.map(()=>1210),
     mode:'markers+text',
     marker:{symbol:'diamond', size:11, color:'#d29922', line:{color:'#fff',width:1}},
-    text: upcoming.map(r=>'📌'),
+    text: upcoming.map(r=>'\ud83d\udccc'),
     textposition:'top center',
-    hovertemplate: upcoming.map(r=>`📌 ${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
+    hovertemplate: upcoming.map(r=>`\ud83d\udccc ${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
     showlegend:false
   });
 
-  // Actual results
   traces.push({
     name:'Race Results',
     x: races.map(r=>new Date(r.date)),
@@ -597,9 +486,9 @@ function buildLayout() {
     hovermode:'closest',
     annotations:[
       {x:dayToDate(GOAL_DAY), y:GOAL_S, xanchor:'right', yanchor:'bottom',
-       text:'🎯 16:00', showarrow:false, font:{color:'#f85149',size:10}},
+       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:10}},
       {x:dayToDate(TODAY_DAY), y:1215, xanchor:'left', yanchor:'top',
-       text:`← ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, font:{color:'#d29922',size:10}},
+       text:`\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, font:{color:'#d29922',size:10}},
     ],
     shapes:[
       {type:'line', x0:dayToDate(TODAY_DAY), x1:dayToDate(TODAY_DAY),
@@ -615,7 +504,6 @@ function initChart() {
   plotInited = true;
 }
 
-// Dynamic: traces 0=goal, 1=bayes±2σ, 2=bayes±1σ, then MODELS[i] at index 3+i
 const MODEL_TRACE_IDX = {};
 MODELS.forEach((m, i) => { MODEL_TRACE_IDX[m.key] = 3 + i; });
 const BAYES_BAND_IDX = [1,2];
@@ -632,88 +520,68 @@ function updateChart() {
 }
 
 // ─────────────────────────────────────────────────────────
-// MODEL CARDS
+// MODEL CARDS — dynamic, only active models shown
 // ─────────────────────────────────────────────────────────
-function buildCards() {
+function updateCards() {
   const el = document.getElementById('cards');
-  MODELS.forEach(m => {
+  el.innerHTML = '';
+  const activeModels = MODELS.filter(m => active[m.key]);
+  if (activeModels.length === 0) {
+    el.innerHTML = '<div class="card" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.82rem;">Select a model above to see its explanation.</div>';
+    return;
+  }
+  activeModels.forEach(m => {
     const pred = m.predict(GOAL_DAY);
     const diff = pred - GOAL_S;
     const onTrack = diff < 0;
     const close = Math.abs(diff) < 45;
     const cls = onTrack ? 'on' : (close ? 'close' : 'off');
     const assessment = onTrack
-      ? `✓ Beats goal by ${fmt(-diff)}`
-      : `✗ Misses by ${fmt(diff)}`;
-    const prob = Math.round(normCDF((GOAL_S - pred) / sharedUncert) * 100);
+      ? `\u2713 Beats goal by ${fmt(-diff)}`
+      : `\u2717 Misses by ${fmt(diff)}`;
+    const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - pred) / sharedUncert) * 100)));
+    const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
 
     el.innerHTML += `
       <div class="card" id="card-${m.key}">
         <div class="card-title">
           <span class="dot" style="background:${m.color}"></span>${m.label}
         </div>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+            <span style="font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;">P(sub-16:00) &nbsp;\u00b7&nbsp; Apr 19</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:700;color:${barColor};">${prob}%</span>
+          </div>
+          <div style="height:5px;background:var(--border);overflow:hidden;border-radius:3px;margin-bottom:7px;">
+            <div style="height:100%;width:${prob}%;background:${barColor};border-radius:3px;"></div>
+          </div>
+          <div style="font-size:0.76rem;color:var(--muted);display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;">
+            <span>predicts <span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${m.color};">${fmt(pred)}</span></span>
+            <span class="${cls}" style="font-weight:600;font-size:0.74rem;">${assessment}</span>
+          </div>
+        </div>
         <div class="card-desc">${m.desc}</div>
         <div class="pred-box">
-          <div class="pred-row"><span class="pred-k">Predicted Apr 19</span><span class="pred-v">${fmt(pred)}</span></div>
-          <div class="pred-row"><span class="pred-k">Goal assessment</span><span class="pred-v ${cls}">${assessment}</span></div>
-          <div class="pred-row"><span class="pred-k">P(sub-16)</span><span class="pred-v ${cls}">${prob}%</span></div>
           <div class="pred-row"><span class="pred-k">Formula</span><span class="pred-v" style="font-size:0.73em;color:var(--muted)">${m.formula}</span></div>
-          <div class="pred-row"><span class="pred-k">Data needed</span><span class="pred-v" style="font-size:0.73em;color:var(--muted)">${m.dataNeed}</span></div>
         </div>
       </div>`;
   });
 }
 
 // ─────────────────────────────────────────────────────────
-// PROBABILITY GRID
-// ─────────────────────────────────────────────────────────
-function buildProbGrid() {
-  const el = document.getElementById('probGrid');
-  MODELS.forEach(m => {
-    const pred = m.predict(GOAL_DAY);
-    const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S-pred)/sharedUncert)*100)));
-    const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
-    el.innerHTML += `
-      <div class="prob-item">
-        <div class="prob-label" style="color:${m.color}">${m.label}</div>
-        <div class="prob-bar-bg">
-          <div class="prob-bar-fill" style="width:${prob}%;background:${barColor}"></div>
-        </div>
-        <div class="prob-val" style="color:${barColor}">${prob}% — predicts ${fmt(pred)}</div>
-      </div>`;
-  });
-
-  // Ensemble average
-  const preds = MODELS.map(m => m.predict(GOAL_DAY));
-  const ensemblePred = preds.reduce((a,b)=>a+b,0)/preds.length;
-  const ensembleProb = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S-ensemblePred)/sharedUncert)*100)));
-  const bc = ensembleProb >= 50 ? '#3fb950' : ensembleProb >= 30 ? '#d29922' : '#f85149';
-  el.innerHTML += `
-    <div class="prob-item" style="border:1px solid var(--border);padding:8px 10px;background:var(--bg)">
-      <div class="prob-label" style="color:var(--text);font-weight:600">Ensemble Average</div>
-      <div class="prob-bar-bg">
-        <div class="prob-bar-fill" style="width:${ensembleProb}%;background:${bc}"></div>
-      </div>
-      <div class="prob-val" style="color:${bc}">${ensembleProb}% — avg prediction ${fmt(ensemblePred)}</div>
-    </div>`;
-}
-
-// ─────────────────────────────────────────────────────────
-// RIDGE PLOT
+// RIDGE PLOT — improved clarity with mean lines and larger % labels
 // ─────────────────────────────────────────────────────────
 function buildRidgePlot() {
-  // X-axis: 820s (13:40) to 1200s (20:00), one point per second
   const xVals = Array.from({length: 381}, (_, i) => 820 + i);
   const sigma = sharedUncert;
-  const pdfPeak = 1 / (sigma * Math.sqrt(2 * Math.PI)); // PDF height at mode
-  const peakH = 0.82;  // scaled height per row (in y-axis units)
-  const gap   = 1.0;   // vertical spacing between rows
+  const pdfPeak = 1 / (sigma * Math.sqrt(2 * Math.PI));
+  const peakH = 0.82;
+  const gap   = 1.0;
 
   function pdf(x, mu) {
     return Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
   }
 
-  // Sort optimistic (sub-16, low predicted time) at top, pessimistic at bottom
   const sorted = [...MODELS].sort((a, b) => b.predict(GOAL_DAY) - a.predict(GOAL_DAY));
 
   const traces = [];
@@ -723,89 +591,78 @@ function buildRidgePlot() {
     const mu = m.predict(GOAL_DAY);
     const yBase = i * gap;
     const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - mu) / sigma) * 100)));
+    const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
 
     const pdfY = xVals.map(x => yBase + (pdf(x, mu) / pdfPeak) * peakH);
 
-    // Full distribution — light fill + coloured outline
     traces.push({
       x: [...xVals, ...xVals.slice().reverse()],
       y: [...pdfY, ...Array(xVals.length).fill(yBase)],
-      fill: 'toself',
-      fillcolor: m.color + '25',
+      fill: 'toself', fillcolor: m.color + '22',
       line: { color: m.color, width: 1.5 },
-      mode: 'lines',
-      hoverinfo: 'skip',
-      showlegend: false,
+      mode: 'lines', hoverinfo: 'skip', showlegend: false,
     });
 
-    // Sub-16:00 highlighted zone
     const subX = xVals.filter(x => x <= GOAL_S);
     if (subX.length > 1) {
       const subY = subX.map(x => yBase + (pdf(x, mu) / pdfPeak) * peakH);
       traces.push({
         x: [...subX, ...subX.slice().reverse()],
         y: [...subY, ...Array(subX.length).fill(yBase)],
-        fill: 'toself',
-        fillcolor: m.color + '80',
+        fill: 'toself', fillcolor: m.color + '70',
         line: { color: 'transparent', width: 0 },
-        mode: 'lines',
-        hoverinfo: 'skip',
-        showlegend: false,
+        mode: 'lines', hoverinfo: 'skip', showlegend: false,
       });
     }
 
-    // Baseline tick
     traces.push({
       x: [820, 1200], y: [yBase, yBase],
-      mode: 'lines',
-      line: { color: '#e4e1db', width: 1 },
+      mode: 'lines', line: { color: '#e4e1db', width: 1 },
       hoverinfo: 'skip', showlegend: false,
     });
 
-    // Model label (left side via annotation)
+    // Mean/center vertical line
+    traces.push({
+      x: [mu, mu], y: [yBase, yBase + peakH],
+      mode: 'lines', line: { color: m.color, width: 2 },
+      hoverinfo: 'skip', showlegend: false,
+    });
+
+    // Model label
     annotations.push({
-      x: 818, y: yBase + peakH * 0.38,
+      x: 818, y: yBase + peakH * 0.68,
       xanchor: 'right', yanchor: 'middle',
-      text: `<b>${m.label}</b>`,
-      showarrow: false,
+      text: `<b>${m.label}</b>`, showarrow: false,
       font: { color: m.color, size: 11, family: '"Source Sans 3",Georgia,sans-serif' },
     });
 
-    // Predicted time label above peak
+    // Probability — large and bold below model name
     annotations.push({
-      x: mu, y: yBase + peakH + 0.05,
-      xanchor: 'center', yanchor: 'bottom',
-      text: `${fmt(mu)}`,
-      showarrow: false,
-      font: { color: m.color, size: 9, family: '"JetBrains Mono","Courier New",monospace' },
+      x: 818, y: yBase + peakH * 0.2,
+      xanchor: 'right', yanchor: 'middle',
+      text: `<b>${prob}%</b>`, showarrow: false,
+      font: { color: barColor, size: 14, family: '"JetBrains Mono","Courier New",monospace' },
     });
 
-    // P(sub-16) label inside success zone (if visible)
-    if (prob > 2) {
-      annotations.push({
-        x: Math.min(GOAL_S - 15, mu - sigma * 0.6),
-        y: yBase + (pdf(Math.min(GOAL_S - 40, mu), mu) / pdfPeak) * peakH * 0.5,
-        xanchor: 'right', yanchor: 'middle',
-        text: `${prob}%`,
-        showarrow: false,
-        font: { color: m.color, size: 9, family: '"JetBrains Mono","Courier New",monospace' },
-      });
-    }
+    // Predicted time above peak
+    annotations.push({
+      x: mu, y: yBase + peakH + 0.07,
+      xanchor: 'center', yanchor: 'bottom',
+      text: fmt(mu), showarrow: false,
+      font: { color: m.color, size: 10, family: '"JetBrains Mono","Courier New",monospace' },
+    });
   });
 
-  // 16:00 goal vertical line
   traces.push({
     x: [GOAL_S, GOAL_S],
     y: [-0.15, sorted.length * gap + peakH * 0.6],
-    mode: 'lines',
-    line: { color: '#c23228', width: 1.5, dash: 'dot' },
+    mode: 'lines', line: { color: '#c23228', width: 1.5, dash: 'dot' },
     hoverinfo: 'skip', showlegend: false,
   });
   annotations.push({
     x: GOAL_S, y: sorted.length * gap + peakH * 0.7,
-    text: '← 16:00 goal', xanchor: 'left', yanchor: 'bottom',
-    showarrow: false,
-    font: { color: '#c23228', size: 10, family: '"Source Sans 3",sans-serif' },
+    text: '\u2190 16:00 goal', xanchor: 'left', yanchor: 'bottom',
+    showarrow: false, font: { color: '#c23228', size: 10, family: '"Source Sans 3",sans-serif' },
   });
 
   const xticks = [], xlabels = [];
@@ -815,19 +672,15 @@ function buildRidgePlot() {
     paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
     font: { family: '"Source Sans 3",Georgia,sans-serif', color: '#9a9590', size: 11 },
     xaxis: {
-      tickvals: xticks, ticktext: xlabels,
-      range: [820, 1200],
-      gridcolor: '#e4e1db', showgrid: true, zeroline: false,
-      tickfont: { size: 10 },
+      tickvals: xticks, ticktext: xlabels, range: [820, 1200],
+      gridcolor: '#e4e1db', showgrid: true, zeroline: false, tickfont: { size: 10 },
     },
     yaxis: {
       range: [-0.2, sorted.length * gap + peakH + 0.4],
       showticklabels: false, showgrid: false, zeroline: false,
     },
-    margin: { t: 20, b: 44, l: 160, r: 20 },
-    annotations,
-    hovermode: false,
-    showlegend: false,
+    margin: { t: 20, b: 44, l: 185, r: 20 },
+    annotations, hovermode: false, showlegend: false,
   }, { responsive: true, displayModeBar: false });
 }
 
@@ -837,10 +690,10 @@ function buildRidgePlot() {
 buildWeekRow();
 buildStats();
 buildToggles();
-buildCards();
-buildProbGrid();
+updateCards();
 buildRidgePlot();
 initChart();
+updateChart();
 </script>
 </body>
 </html>

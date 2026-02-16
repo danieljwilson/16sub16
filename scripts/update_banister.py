@@ -52,6 +52,14 @@ MAX_HR  = 185
 TAU_FIT = 42.0
 TAU_FAT = 7.0
 
+# Projection settings (future days > t_today)
+# Phase-based projection: modest build, then sharpening, then taper.
+PROJ_BUILD_END_FRACTION = 0.70       # first 70% of remaining days
+PROJ_SHARPEN_END_FRACTION = 0.90     # next 20%; final 10% is taper
+PROJ_BUILD_LOAD_FACTOR = 1.08
+PROJ_SHARPEN_LOAD_FACTOR = 0.92
+PROJ_TAPER_FINAL_FACTOR = 0.60
+
 # Strava OAuth
 STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token"
 STRAVA_API_BASE  = "https://www.strava.com/api/v3"
@@ -211,8 +219,8 @@ def build_series(activities, t_today):
     Build FIT/FAT time series for days 0..GOAL_DAY.
 
     For days 0..t_today: use actual TRIMP (0 if no run that day).
-    For days t_today+1..GOAL_DAY: project at mean daily TRIMP of last 14 days
-    ("maintain current load" assumption).
+    For days t_today+1..GOAL_DAY: project using a simple periodized pattern:
+    modest build, then sharpening, then taper into the goal race.
     """
     # Aggregate TRIMP per campaign day
     trimp_by_day = {}
@@ -232,11 +240,26 @@ def build_series(activities, t_today):
     fat = 0.0
     series = []
 
+    days_to_goal = max(1, GOAL_DAY - t_today)
+
     for day in range(GOAL_DAY + 1):
         if day <= t_today:
             w = trimp_by_day.get(day, 0.0)
         else:
-            w = mean_trimp
+            frac_to_goal = (day - t_today) / days_to_goal
+            if frac_to_goal <= PROJ_BUILD_END_FRACTION:
+                load_factor = PROJ_BUILD_LOAD_FACTOR
+            elif frac_to_goal <= PROJ_SHARPEN_END_FRACTION:
+                load_factor = PROJ_SHARPEN_LOAD_FACTOR
+            else:
+                # Taper linearly from sharpening load down to final taper load.
+                taper_span = max(1e-9, 1.0 - PROJ_SHARPEN_END_FRACTION)
+                taper_progress = (frac_to_goal - PROJ_SHARPEN_END_FRACTION) / taper_span
+                load_factor = (
+                    PROJ_SHARPEN_LOAD_FACTOR
+                    + (PROJ_TAPER_FINAL_FACTOR - PROJ_SHARPEN_LOAD_FACTOR) * taper_progress
+                )
+            w = mean_trimp * max(0.0, load_factor)
 
         fit = fit * kf + w * (1 - kf)
         fat = fat * kn + w * (1 - kn)
@@ -281,8 +304,8 @@ def fit_params(series):
     """
     Fit p₀, k₁, k₂ from race results using OLS normal equations.
 
-    Model: p(t) = p₀ + k₁·FIT(t) − k₂·FAT(t)
-    Rewrite as: p(t) = c₀·1 + c₁·FIT(t) + c₂·(−FAT(t))
+    Model: p(t) = p₀ − k₁·FIT(t) + k₂·FAT(t)
+    Rewrite as: p(t) = c₀·1 + c₁·(−FIT(t)) + c₂·FAT(t)
 
     Uses a 3×3 system (one equation per race).
     Returns dict {p0, k1, k2} or None if data insufficient / unphysical.
@@ -295,14 +318,14 @@ def fit_params(series):
         return None  # No real training data yet
 
     # Build 3×3 normal equations for exactly 3 race points
-    # [1, FIT, -FAT] · [p0, k1, k2]^T = time_s
+    # [1, -FIT, FAT] · [p0, k1, k2]^T = time_s
     rows = []
     rhs  = []
     for r in RACE_RESULTS:
         s = by_day.get(r["day"])
         if s is None:
             return None
-        rows.append([1.0, s["fit"], -s["fat"]])
+        rows.append([1.0, -s["fit"], s["fat"]])
         rhs.append(float(r["time_s"]))
 
     # Normal equations: A^T A x = A^T b
@@ -313,15 +336,40 @@ def fit_params(series):
     ATb = [sum(A[k][i] * b[k] for k in range(3)) for i in range(3)]
 
     sol = _gauss(ATA, ATb)
-    if sol is None:
+    if sol is not None:
+        p0, k1, k2 = sol
+        # Prefer physically sensible solutions:
+        # fitness helps (k1>0), fatigue hurts (k2>0), and fitness dominates per unit load.
+        if k1 > 0 and k2 > 0 and k1 > k2:
+            return {"p0": round(p0, 4), "k1": round(k1, 6), "k2": round(k2, 6)}
+
+    # Fallback: constrained least squares over (k1, k2), solve p0 analytically.
+    # This avoids unstable/unphysical exact fits from only three race points.
+    fit_fat_time = [(s["fit"], s["fat"], float(r["time_s"])) for s, r in zip([by_day[r["day"]] for r in RACE_RESULTS], RACE_RESULTS)]
+    best = None
+    k1 = 0.5
+    while k1 <= 8.0 + 1e-9:
+        k2 = 0.1
+        while k2 <= 4.0 + 1e-9:
+            if k1 > k2:
+                p0 = sum(t + k1 * fit - k2 * fat for fit, fat, t in fit_fat_time) / len(fit_fat_time)
+                err = 0.0
+                for fit, fat, t in fit_fat_time:
+                    pred = p0 - k1 * fit + k2 * fat
+                    err += (pred - t) ** 2
+                if best is None or err < best["err"]:
+                    best = {"err": err, "p0": p0, "k1": k1, "k2": k2}
+            k2 += 0.05
+        k1 += 0.05
+
+    if best is None:
         return None
 
-    p0, k1, k2 = sol
-    # Sanity check: k1, k2 must be positive (fitness helps, fatigue hurts)
-    if k1 <= 0 or k2 <= 0:
-        return None
-
-    return {"p0": round(p0, 4), "k1": round(k1, 6), "k2": round(k2, 6)}
+    return {
+        "p0": round(best["p0"], 4),
+        "k1": round(best["k1"], 6),
+        "k2": round(best["k2"], 6),
+    }
 
 
 # ─────────────────────────────────────────────────────────
@@ -436,7 +484,7 @@ def main():
     print(f"Activities in log: {len(activities)}, total TRIMP: {total_trimp:.1f}")
 
     series, mean_trimp = build_series(activities, t_today)
-    print(f"14-day mean daily TRIMP (projection load): {mean_trimp:.2f}")
+    print(f"14-day mean daily TRIMP (projection base load): {mean_trimp:.2f}")
 
     # --- Fit model ---
     params = fit_params(series)
@@ -447,7 +495,7 @@ def main():
     else:
         print(f"Fit params: p0={params['p0']:.1f}, k1={params['k1']:.6f}, k2={params['k2']:.6f}")
         goal_s = series[-1]  # GOAL_DAY entry
-        predicted_s = params["p0"] + params["k1"] * goal_s["fit"] - params["k2"] * goal_s["fat"]
+        predicted_s = params["p0"] - params["k1"] * goal_s["fit"] + params["k2"] * goal_s["fat"]
         print(f"Predicted Apr 19 finish: {fmt_time(predicted_s)}  ({predicted_s:.0f}s)")
 
     # --- Inject HTML ---
