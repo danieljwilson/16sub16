@@ -10,8 +10,8 @@
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
 :root {
-  --bg: #f9f8f6; --card: #ffffff; --border: #e4e1db;
-  --text: #1c1a17; --muted: #9a9590; --accent: #237a3a;
+  --bg: #f8f6f1; --card: #fdfcfa; --border: #d0ccc4;
+  --text: #1a1815; --muted: #807a72; --accent: #237a3a;
   --goal: #c23228; --yellow: #9a7020; --blue: #1d6ea8;
   --green: #237a3a; --purple: #6b4fa8; --orange: #c05a18; --pink: #c0394a;
 }
@@ -19,18 +19,18 @@
 body {
   font-family: 'Source Sans 3', Georgia, sans-serif;
   background: var(--bg); color: var(--text);
-  padding: 44px 32px; max-width: 1300px; margin: 0 auto;
+  padding: 52px 40px; max-width: 1300px; margin: 0 auto;
 }
 h1 {
   font-family: 'Lora', Georgia, serif;
   font-size: 3rem; font-weight: 700; color: var(--text);
-  letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px;
+  letter-spacing: -1px; line-height: 1; margin-bottom: 6px;
 }
 h2 {
   font-size: 0.64rem; font-weight: 600; color: var(--muted);
   text-transform: uppercase; letter-spacing: 2.5px;
-  margin-bottom: 18px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px; padding-left: 10px;
+  border-left: 3px solid var(--accent);
 }
 .subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 36px; }
 .week-row { display: flex; gap: 5px; align-items: center; margin-bottom: 28px; }
@@ -41,7 +41,7 @@ h2 {
   margin-bottom: 36px; border: 1px solid var(--border);
   background: var(--border); gap: 1px;
 }
-.stat { background: var(--card); padding: 20px; }
+.stat { background: var(--card); padding: 24px 20px; }
 .stat-label {
   font-size: 0.62rem; color: var(--muted); text-transform: uppercase;
   letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600;
@@ -56,25 +56,26 @@ h2 {
 .toggle {
   display: flex; align-items: center; gap: 7px;
   background: transparent; border: 1px solid var(--border);
-  border-radius: 2px; padding: 5px 12px;
+  border-radius: 0; padding: 5px 12px;
   cursor: pointer; user-select: none; font-size: 0.76rem;
   font-family: inherit; color: var(--text);
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .toggle.active { background: var(--text); border-color: var(--text); color: var(--bg); }
 .toggle:hover:not(.active) { border-color: var(--text); }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
 .chart-wrap {
   background: var(--card); border: 1px solid var(--border);
-  padding: 16px; margin-bottom: 36px;
+  padding: 0; margin-bottom: 36px;
 }
 .cards {
-  display: grid; grid-template-columns: repeat(2, 1fr);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1px; margin-bottom: 36px;
   background: var(--border); border: 1px solid var(--border);
   min-height: 180px;
 }
-.card { background: var(--card); padding: 20px; }
+.card { background: var(--card); padding: 24px; }
+.main-chart { height: 490px; }
 .card-title {
   font-size: 0.7rem; font-weight: 600; display: flex; align-items: center;
   gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
@@ -98,6 +99,20 @@ h2 {
   background: var(--card); border: 1px solid var(--border);
   padding: 24px; margin-bottom: 36px;
 }
+@media (max-width: 700px) {
+  body { padding: 24px 16px; }
+  h1 { font-size: 2.1rem; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .toggles { gap: 4px; }
+  .toggle { padding: 4px 9px; font-size: 0.71rem; }
+  .week-row { flex-wrap: wrap; }
+  .main-chart { height: 300px !important; }
+  #ridgePlot { height: 500px !important; }
+}
+@media (max-width: 400px) {
+  body { padding: 16px 12px; }
+  h1 { font-size: 1.75rem; }
+}
 </style>
 </head>
 <body>
@@ -113,7 +128,7 @@ h2 {
 <p style="font-size:0.68rem;color:var(--muted);margin-bottom:14px;">Select up to 2 models to compare — clicking a third swaps out the oldest selection.</p>
 
 <div class="chart-wrap">
-  <div id="chart" style="height:490px;"></div>
+  <div id="chart" class="main-chart"></div>
 </div>
 
 <div class="cards" id="cards"></div>
@@ -251,30 +266,59 @@ const MODELS = [
     predict: t => linFit.predict(t),
     desc: 'OLS line through all 3 race times. Constant improvement rate. Pulled optimistic by large Marseille\u2192Nice jump.',
     formula: 'y = a + b\u00b7t',
+    terms: [
+      ['y', 'predicted finish time (seconds)'],
+      ['a', 'baseline intercept fitted by OLS'],
+      ['b', 'improvement rate in s/day; negative = getting faster'],
+      ['t', 'days since Dec 28, 2025'],
+    ],
   },
   {
     key: 'log', label: 'Log-Linear', color: '#3fb950', dash: 'solid',
     predict: t => logPred(t),
     desc: 'Performance \u221d log(training time). Fast early gains slow over time \u2014 well-supported by sports science. Reflects neural \u2192 aerobic adaptation shift.',
     formula: 'y = a + b\u00b7ln(t+1)',
+    terms: [
+      ['y', 'predicted finish time (seconds)'],
+      ['a', 'baseline constant'],
+      ['b', 'rate of log-phase improvement'],
+      ['ln(t+1)', 'log of days+1; large early gains, diminishing returns later'],
+    ],
   },
   {
     key: 'exp', label: 'Exp. Saturation', color: '#f0883e', dash: 'solid',
     predict: t => expFit.predict(t),
     desc: 'Performance decays exponentially toward an asymptote B (your physiological ceiling). B is fit freely \u2014 constrained to \u226560 s below your current best \u2014 so the model cannot conclude you\'ve already plateaued.',
     formula: 'y = B + A\u00b7e^(\u2212k\u00b7t)',
+    terms: [
+      ['y', 'predicted finish time (seconds)'],
+      ['B', 'asymptote \u2014 physiological ceiling (floor on time); fit to \u226560s below current best'],
+      ['A', 'gap between baseline and ceiling'],
+      ['k', 'decay rate \u2014 how quickly gains slow; larger k = faster plateau'],
+      ['t', 'days since start'],
+    ],
   },
   {
     key: 'bayes', label: 'Bayesian', color: '#bc8cff', dash: 'solid',
     predict: t => bayesPred(t),
     desc: 'Prior: trained endurance athlete new to running improves ~1.5 s/day on average. Updated with each race. Shows uncertainty bands (\u00b11\u03c3, \u00b12\u03c3) that narrow as more races are run.',
     formula: 'posterior \u221d likelihood \u00d7 prior',
+    terms: [
+      ['posterior', 'updated belief combining prior + race evidence'],
+      ['likelihood', 'probability of observing race times given a slope'],
+      ['prior', '\u22121.5 s/day \u00b1 1.2 (trained athlete new to running)'],
+    ],
   },
   {
     key: 'cons', label: 'Conservative Linear', color: '#ff7b72', dash: 'dash',
     predict: t => consFit.predict(t),
     desc: 'Linear fit through Nice + Monaco only \u2014 removes the \u201cpop\u201d from Marseille. Represents the scenario where the current slower improvement rate continues.',
     formula: 'y = a + b\u00b7t  [last 2 races]',
+    terms: [
+      ['y', 'predicted finish time (seconds)'],
+      ['a, b', 'OLS fit through Nice (Day 7) + Monaco (Day 49) only'],
+      ['t', 'days since start'],
+    ],
   },
 ];
 
@@ -294,8 +338,17 @@ const MODELS = [
   MODELS.push({
     key: 'banister', label: 'Banister', color: '#e8b84b', dash: 'solid',
     predict: banisterPredict,
-    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 with a simple build -> sharpen -> taper load pattern from your recent 14-day average. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 with a simple build \u2192 sharpen \u2192 taper load pattern from your recent 14-day average. During your taper (final 10% of campaign), FAT drops quickly while FIT is maintained \u2014 this should show improving form near race day once the model is well-calibrated from additional races. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
     formula: 'p(t) = p\u2080 - k\u2081\u00b7FIT(t) + k\u2082\u00b7FAT(t)',
+    terms: [
+      ['p(t)', 'predicted finish time at day t (seconds)'],
+      ['p\u2080', 'baseline time when FIT = FAT = 0'],
+      ['k\u2081', 'fitness sensitivity \u2014 how much each FIT unit speeds you up'],
+      ['FIT(t)', 'accumulated fitness; \u03c4=42d exponential moving avg of daily TRIMP'],
+      ['k\u2082', 'fatigue sensitivity \u2014 how much each FAT unit slows you down'],
+      ['FAT(t)', 'accumulated fatigue; \u03c4=7d exponential moving avg of daily TRIMP'],
+      ['TRIMP', 'Training Impulse = duration(min) \u00d7 HR-ratio \u00d7 exp(1.92 \u00d7 HR-ratio)'],
+    ],
   });
 })();
 
@@ -447,7 +500,7 @@ function buildTraces() {
       name: m.label, x: chartDates,
       y: lineY,
       mode:'lines', line:{color:m.color, dash:m.dash, width: m.key === 'ensemble' ? 2.5 : 2},
-      hovertemplate: m.label+': %{text}<extra></extra>',
+      hovertemplate: m.label + ': %{text}<br><span style="color:#9a9590;font-size:0.9em">%{x|%b %-d}</span><extra></extra>',
       text: lineY.map(v=>fmt(v)),
     });
   });
@@ -522,6 +575,32 @@ const MODEL_TRACE_IDX = {};
 MODELS.forEach((m, i) => { MODEL_TRACE_IDX[m.key] = 3 + i; });
 const BAYES_BAND_IDX = [1,2];
 
+function buildGoalAnnotation(m) {
+  const pred = m.predict(GOAL_DAY);
+  const diff = pred - GOAL_S;
+  const sign = diff < 0 ? '\u2212' : '+';
+  const label = `${m.label}<br><b>${fmt(pred)}</b><br><span style="font-size:9px">${sign}${fmt(Math.abs(diff))}</span>`;
+  return {
+    x: dayToDate(GOAL_DAY), y: pred,
+    xanchor: 'right', yanchor: 'middle',
+    text: label,
+    showarrow: true, arrowhead: 1, arrowsize: 0.7,
+    arrowcolor: m.color, ax: -40, ay: 0,
+    bgcolor: 'rgba(255,255,255,0.92)',
+    bordercolor: m.color, borderwidth: 1.5, borderpad: 5,
+    font: { color: m.color, size: 10, family: '"Source Sans 3",sans-serif' },
+  };
+}
+
+function updateGoalAnnotations() {
+  if (!plotInited) return;
+  const base = buildLayout().annotations;
+  const modelAnnotations = MODELS
+    .filter(m => active[m.key])
+    .map(m => buildGoalAnnotation(m));
+  Plotly.relayout('chart', { annotations: [...base, ...modelAnnotations] });
+}
+
 function updateChart() {
   if (!plotInited) return;
   MODELS.forEach(m => {
@@ -531,6 +610,7 @@ function updateChart() {
       Plotly.restyle('chart', {visible: vis}, BAYES_BAND_IDX);
     }
   });
+  updateGoalAnnotations();
 }
 
 // ─────────────────────────────────────────────────────────
@@ -577,6 +657,11 @@ function updateCards() {
         <div class="card-desc">${m.desc}</div>
         <div class="pred-box">
           <div class="pred-row"><span class="pred-k">Formula</span><span class="pred-v" style="font-size:0.73em;color:var(--muted)">${m.formula}</span></div>
+          ${(m.terms || []).length ? `<div style="margin-top:8px;">${(m.terms || []).map(([sym, def]) =>
+            `<div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
+               <span style="font-family:'JetBrains Mono','Courier New',monospace;font-size:0.69rem;color:var(--text);min-width:56px;flex-shrink:0;">${sym}</span>
+               <span style="font-size:0.72rem;color:var(--muted);line-height:1.45;">${def}</span>
+             </div>`).join('')}</div>` : ''}
         </div>
       </div>`;
   });

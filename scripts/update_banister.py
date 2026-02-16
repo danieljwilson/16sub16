@@ -339,28 +339,31 @@ def fit_params(series):
     if sol is not None:
         p0, k1, k2 = sol
         # Prefer physically sensible solutions:
-        # fitness helps (k1>0), fatigue hurts (k2>0), and fitness dominates per unit load.
-        if k1 > 0 and k2 > 0 and k1 > k2:
+        # fitness helps (k1>0), fatigue hurts (k2>0), and fatigue coefficient is
+        # at least 80% of fitness coefficient so the taper (fast FAT drop) predicts
+        # improving form near race day rather than worsening.
+        if k1 > 0 and k2 > 0 and k2 >= 0.8 * k1:
             return {"p0": round(p0, 4), "k1": round(k1, 6), "k2": round(k2, 6)}
 
     # Fallback: constrained least squares over (k1, k2), solve p0 analytically.
     # This avoids unstable/unphysical exact fits from only three race points.
+    # Constraint: k2 >= 0.8*k1 (fatigue effect meaningfully competes during taper).
     fit_fat_time = [(s["fit"], s["fat"], float(r["time_s"])) for s, r in zip([by_day[r["day"]] for r in RACE_RESULTS], RACE_RESULTS)]
     best = None
     k1 = 0.5
     while k1 <= 8.0 + 1e-9:
-        k2 = 0.1
-        while k2 <= 4.0 + 1e-9:
-            if k1 > k2:
-                p0 = sum(t + k1 * fit - k2 * fat for fit, fat, t in fit_fat_time) / len(fit_fat_time)
-                err = 0.0
-                for fit, fat, t in fit_fat_time:
-                    pred = p0 - k1 * fit + k2 * fat
-                    err += (pred - t) ** 2
-                if best is None or err < best["err"]:
-                    best = {"err": err, "p0": p0, "k1": k1, "k2": k2}
-            k2 += 0.05
-        k1 += 0.05
+        k2_min = max(1.0, 0.8 * k1)
+        k2 = k2_min
+        while k2 <= 8.0 + 1e-9:
+            p0 = sum(t + k1 * fit - k2 * fat for fit, fat, t in fit_fat_time) / len(fit_fat_time)
+            err = 0.0
+            for fit, fat, t in fit_fat_time:
+                pred = p0 - k1 * fit + k2 * fat
+                err += (pred - t) ** 2
+            if best is None or err < best["err"]:
+                best = {"err": err, "p0": p0, "k1": k1, "k2": k2}
+            k2 += 0.1
+        k1 += 0.1
 
     if best is None:
         return None
