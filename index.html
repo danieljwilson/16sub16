@@ -648,7 +648,7 @@ function buildRidgePlot() {
       x: -0.03, y: yBase + peakH * 0.5,
       xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
-      text: `<span style="display:inline-block;min-width:170px;text-align:right;line-height:1.05;color:${m.color};font-size:16px;vertical-align:middle;"><b>${legendLabel}</b></span><span style="display:inline-block;min-width:54px;text-align:right;margin-left:18px;color:${barColor};font-size:16px;vertical-align:middle;"><b>${prob}%</b></span>`,
+      text: `<span style="display:inline-block;min-width:170px;text-align:right;line-height:1.05;color:${m.color};font-size:16px;vertical-align:middle;"><b>${legendLabel}</b></span><span style="display:inline-block;min-width:54px;text-align:right;margin-left:18px;color:${barColor};font-size:16px;vertical-align:middle;"><b> ⋅ ${prob}%</b></span>`,
       showarrow: false,
       font: { color: '#9a9590', size: 16, family: '"Source Sans 3",Georgia,sans-serif' },
     });
