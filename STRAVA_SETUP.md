@@ -130,7 +130,7 @@ before getting up.
   (comfortable easy pace). TRIMP will still accumulate but less accurately.
 - **The model needs all 3 race results** to fit p₀, k₁, k₂. Until then
   it prints "Banister model not yet active" and the HTML shows no Banister line.
-- **FIT (τ=42d)** represents long-term aerobic fitness accumulation.
-  **FAT (τ=7d)** represents short-term fatigue that decays quickly.
+- **FIT (τ=47d)** represents long-term aerobic fitness accumulation.
+  **FAT (τ=6d)** represents short-term fatigue that decays quickly.
 - After a race or rest week, FAT drops faster than FIT — this is the
   classic "taper" effect and why form peaks a week before race day.

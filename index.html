@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>16sub16 — Road to Sub-16 5K</title>
+<title>16→sub16 — Road to Sub-16 5K</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Lora:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
 :root {
@@ -22,9 +22,9 @@ body {
   padding: 52px 40px; max-width: 1300px; margin: 0 auto;
 }
 h1 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: 'Space Grotesk', 'Source Sans 3', sans-serif;
   font-size: 3rem; font-weight: 700; color: var(--text);
-  letter-spacing: -1px; line-height: 1; margin-bottom: 6px;
+  letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px;
 }
 h2 {
   font-size: 0.64rem; font-weight: 600; color: var(--muted);
@@ -64,6 +64,49 @@ h2 {
 .toggle.active { background: var(--text); border-color: var(--text); color: var(--bg); }
 .toggle:hover:not(.active) { border-color: var(--text); }
 .dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.banister-controls {
+  margin: 6px 0 18px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.banister-controls-title {
+  font-size: 0.66rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.banister-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.banister-control-row {
+  display: grid;
+  grid-template-columns: 58px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+}
+.banister-control-row label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.banister-control-row input[type="range"] {
+  width: 100%;
+}
+.banister-control-value {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.74rem;
+  text-align: right;
+  color: var(--text);
+}
+.banister-controls-note {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
 .chart-wrap {
   background: var(--card); border: 1px solid var(--border);
   padding: 0; margin-bottom: 36px;
@@ -81,6 +124,16 @@ h2 {
   gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
 }
 .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
+.card-desc a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.model-callout {
+  font-size: 0.74rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--yellow);
+  background: var(--bg);
+}
 .pred-box { background: var(--bg); padding: 10px 12px; }
 .pred-row {
   display: flex; justify-content: space-between; font-size: 0.78rem;
@@ -117,8 +170,8 @@ h2 {
 </head>
 <body>
 
-<h1>16sub16</h1>
-<p class="subtitle">Road to Sub-16 5K &nbsp;·&nbsp; Dec 28, 2025 → Apr 19, 2026 &nbsp;·&nbsp; Côte d'Azur race circuit</p>
+<h1>16→sub16</h1>
+<p class="subtitle">Road to Sub-16 5K &nbsp;·&nbsp; Dec 28, 2025 → Apr 19, 2026</p>
 
 <div class="week-row" id="weekRow"></div>
 
@@ -126,6 +179,7 @@ h2 {
 
 <div class="toggles" id="toggles"></div>
 <p style="font-size:0.68rem;color:var(--muted);margin-bottom:14px;">Select up to 2 models to compare — clicking a third swaps out the oldest selection.</p>
+<div class="banister-controls" id="banisterControls" hidden></div>
 
 <div class="chart-wrap">
   <div id="chart" class="main-chart"></div>
@@ -139,16 +193,16 @@ h2 {
   <div id="ridgePlot" style="height:420px;"></div>
 </div>
 
-<footer id="footer">16sub16 tracker · Built with Plotly.js</footer>
-<script>
-  document.getElementById('footer').textContent =
-    `16sub16 tracker · Built with Plotly.js · Viewed ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} · Day ${TODAY_DAY} of ${GOAL_DAY}`;
-</script>
-
 <script>
 // BANISTER_DATA_START
-const BANISTER_SERIES=[{"day":0,"fit":3.1619,"fat":17.8899},{"day":1,"fit":3.0875,"fat":15.5083},{"day":2,"fit":3.0149,"fat":13.4438},{"day":3,"fit":4.7795,"fat":22.04},{"day":4,"fit":4.6671,"fat":19.1059},{"day":5,"fit":7.1603,"fat":31.2901},{"day":6,"fit":8.0062,"fat":32.864},{"day":7,"fit":11.0207,"fat":46.6111},{"day":8,"fit":10.7614,"fat":40.4061},{"day":9,"fit":10.5082,"fat":35.0272},{"day":10,"fit":12.5265,"fat":43.1825},{"day":11,"fit":16.2568,"fat":60.2074},{"day":12,"fit":18.0185,"fat":64.3244},{"day":13,"fit":17.5946,"fat":55.7614},{"day":14,"fit":17.1806,"fat":48.3383},{"day":15,"fit":16.7764,"fat":41.9034},{"day":16,"fit":20.6593,"fat":60.5277},{"day":17,"fit":22.0736,"fat":63.2224},{"day":18,"fit":21.5542,"fat":54.8061},{"day":19,"fit":23.6887,"fat":62.4565},{"day":20,"fit":23.1314,"fat":54.1421},{"day":21,"fit":22.5871,"fat":46.9346},{"day":22,"fit":25.1671,"fat":58.2908},{"day":23,"fit":24.575,"fat":50.531},{"day":24,"fit":26.1397,"fat":55.9288},{"day":25,"fit":28.4857,"fat":65.237},{"day":26,"fit":31.1175,"fat":75.2352},{"day":27,"fit":33.4124,"fat":82.3464},{"day":28,"fit":34.0061,"fat":79.1915},{"day":29,"fit":33.206,"fat":68.6493},{"day":30,"fit":36.3722,"fat":81.8454},{"day":31,"fit":35.5165,"fat":70.95},{"day":32,"fit":37.008,"fat":74.6722},{"day":33,"fit":40.0396,"fat":86.8108},{"day":34,"fit":39.0975,"fat":75.2544},{"day":35,"fit":38.1776,"fat":65.2363},{"day":36,"fit":40.2644,"fat":73.4411},{"day":37,"fit":43.4487,"fat":87.041},{"day":38,"fit":44.9188,"fat":89.5554},{"day":39,"fit":45.7538,"fat":88.3381},{"day":40,"fit":47.4,"fat":91.9834},{"day":41,"fit":49.7732,"fat":99.4757},{"day":42,"fit":48.6021,"fat":86.2333},{"day":43,"fit":50.179,"fat":90.1453},{"day":44,"fit":50.4944,"fat":86.6097},{"day":45,"fit":49.3064,"fat":75.08},{"day":46,"fit":52.851,"fat":91.7044},{"day":47,"fit":53.4827,"fat":90.1062},{"day":48,"fit":53.8021,"fat":87.038},{"day":49,"fit":55.8979,"fat":94.4715},{"day":50,"fit":54.5827,"fat":81.8953},{"day":51,"fit":55.6485,"fat":84.2893},{"day":52,"fit":56.6891,"fat":86.3647},{"day":53,"fit":57.7053,"fat":88.1638},{"day":54,"fit":58.6976,"fat":89.7234},{"day":55,"fit":59.6665,"fat":91.0753},{"day":56,"fit":60.6127,"fat":92.2473},{"day":57,"fit":61.5365,"fat":93.2633},{"day":58,"fit":62.4387,"fat":94.144},{"day":59,"fit":63.3196,"fat":94.9075},{"day":60,"fit":64.1798,"fat":95.5693},{"day":61,"fit":65.0197,"fat":96.1431},{"day":62,"fit":65.8399,"fat":96.6404},{"day":63,"fit":66.6408,"fat":97.0716},{"day":64,"fit":67.4228,"fat":97.4453},{"day":65,"fit":68.1865,"fat":97.7693},{"day":66,"fit":68.9322,"fat":98.0502},{"day":67,"fit":69.6603,"fat":98.2937},{"day":68,"fit":70.3713,"fat":98.5047},{"day":69,"fit":71.0656,"fat":98.6877},{"day":70,"fit":71.7435,"fat":98.8463},{"day":71,"fit":72.4055,"fat":98.9838},{"day":72,"fit":73.0519,"fat":99.103},{"day":73,"fit":73.6831,"fat":99.2063},{"day":74,"fit":74.2994,"fat":99.2959},{"day":75,"fit":74.9013,"fat":99.3735},{"day":76,"fit":75.489,"fat":99.4409},{"day":77,"fit":76.0628,"fat":99.4992},{"day":78,"fit":76.6232,"fat":99.5498},{"day":79,"fit":77.1704,"fat":99.5936},{"day":80,"fit":77.7047,"fat":99.6316},{"day":81,"fit":78.2264,"fat":99.6646},{"day":82,"fit":78.7359,"fat":99.6932},{"day":83,"fit":79.2333,"fat":99.7179},{"day":84,"fit":79.7191,"fat":99.7394},{"day":85,"fit":80.1934,"fat":99.758},{"day":86,"fit":80.6566,"fat":99.7741},{"day":87,"fit":81.1089,"fat":99.7881},{"day":88,"fit":81.5505,"fat":99.8002},{"day":89,"fit":81.9817,"fat":99.8107},{"day":90,"fit":82.4028,"fat":99.8199},{"day":91,"fit":82.814,"fat":99.8277},{"day":92,"fit":83.2155,"fat":99.8346},{"day":93,"fit":83.6076,"fat":99.8405},{"day":94,"fit":83.6423,"fat":97.8759},{"day":95,"fit":83.6762,"fat":96.1728},{"day":96,"fit":83.7093,"fat":94.6964},{"day":97,"fit":83.7416,"fat":93.4165},{"day":98,"fit":83.7731,"fat":92.307},{"day":99,"fit":83.8039,"fat":91.3453},{"day":100,"fit":83.834,"fat":90.5115},{"day":101,"fit":83.8634,"fat":89.7888},{"day":102,"fit":83.892,"fat":89.1622},{"day":103,"fit":83.92,"fat":88.6191},{"day":104,"fit":83.9474,"fat":88.1483},{"day":105,"fit":83.9741,"fat":87.7401},{"day":106,"fit":83.9777,"fat":87.2592},{"day":107,"fit":83.8689,"fat":86.2069},{"day":108,"fit":83.6504,"fat":84.6593},{"day":109,"fit":83.3247,"fat":82.6822},{"day":110,"fit":82.8944,"fat":80.333},{"day":111,"fit":82.3619,"fat":77.661},{"day":112,"fit":81.7296,"fat":74.7094}];
-const BANISTER_PARAMS={"p0": 1077.9244, "k1": 1.3, "k2": 1.04};
+const BANISTER_SERIES=[{"day":-1,"fit":21.0022,"fat":35.5985},{"day":0,"fit":23.3892,"fat":50.7644},{"day":1,"fit":22.8968,"fat":42.9711},{"day":2,"fit":22.4148,"fat":36.3743},{"day":3,"fit":23.5853,"fat":42.7672},{"day":4,"fit":23.0888,"fat":36.2016},{"day":5,"fit":24.9317,"fat":47.6281},{"day":6,"fit":25.3145,"fat":46.9349},{"day":7,"fit":27.6474,"fat":60.6281},{"day":8,"fit":27.0653,"fat":51.3206},{"day":9,"fit":26.4956,"fat":43.442},{"day":10,"fit":27.9648,"fat":51.5549},{"day":11,"fit":30.9775,"fat":69.903},{"day":12,"fit":32.2439,"fat":73.1623},{"day":13,"fit":31.5651,"fat":61.9306},{"day":14,"fit":30.9006,"fat":52.4231},{"day":15,"fit":33.11,"fat":65.2308},{"day":16,"fit":36.2404,"fat":83.1274},{"day":17,"fit":37.1778,"fat":82.7655},{"day":18,"fit":36.3951,"fat":70.0595},{"day":19,"fit":37.9925,"fat":76.5403},{"day":20,"fit":37.1927,"fat":64.79},{"day":21,"fit":36.4098,"fat":54.8435},{"day":22,"fit":38.4272,"fat":66.7255},{"day":23,"fit":37.6182,"fat":56.4819},{"day":24,"fit":38.7437,"fat":61.7932},{"day":25,"fit":40.5774,"fat":71.6272},{"day":26,"fit":42.6777,"fat":82.1762},{"day":27,"fit":44.4876,"fat":89.3114},{"day":28,"fit":45.279,"fat":88.2008},{"day":29,"fit":45.4661,"fat":82.9764},{"day":30,"fit":48.041,"fat":95.9949},{"day":31,"fit":47.0296,"fat":81.2579},{"day":32,"fit":48.1218,"fat":83.968},{"day":33,"fit":53.1716,"fat":115.29},{"day":34,"fit":52.0523,"fat":97.5909},{"day":35,"fit":50.9565,"fat":82.6089},{"day":36,"fit":52.5546,"fat":89.4038},{"day":37,"fit":55.145,"fat":102.6368},{"day":38,"fit":56.2141,"fat":103.1422},{"day":39,"fit":56.7235,"fat":99.6525},{"day":40,"fit":57.9655,"fat":102.1193},{"day":41,"fit":59.8664,"fat":109.2035},{"day":42,"fit":58.6061,"fat":92.4388},{"day":43,"fit":59.8064,"fat":95.9975},{"day":44,"fit":59.886,"fat":91.0218},{"day":45,"fit":58.6252,"fat":77.0483},{"day":46,"fit":61.6006,"fat":95.9176},{"day":47,"fit":61.9816,"fat":93.4278},{"day":48,"fit":62.0885,"fat":89.3795},{"day":49,"fit":63.7893,"fat":97.5925},{"day":50,"fit":64.8377,"fat":100.0484},{"day":51,"fit":65.7598,"fat":101.3677},{"day":52,"fit":66.6626,"fat":102.4844},{"day":53,"fit":67.5463,"fat":103.4297},{"day":54,"fit":68.4114,"fat":104.2298},{"day":55,"fit":69.2584,"fat":104.9072},{"day":56,"fit":70.0875,"fat":105.4805},{"day":57,"fit":70.8991,"fat":105.9658},{"day":58,"fit":71.6937,"fat":106.3766},{"day":59,"fit":72.4715,"fat":106.7244},{"day":60,"fit":73.2329,"fat":107.0187},{"day":61,"fit":73.9784,"fat":107.2679},{"day":62,"fit":74.7081,"fat":107.4788},{"day":63,"fit":75.4225,"fat":107.6574},{"day":64,"fit":76.1218,"fat":107.8085},{"day":65,"fit":76.8064,"fat":107.9364},{"day":66,"fit":77.4766,"fat":108.0447},{"day":67,"fit":78.1327,"fat":108.1364},{"day":68,"fit":78.7749,"fat":108.214},{"day":69,"fit":79.4037,"fat":108.2797},{"day":70,"fit":80.0192,"fat":108.3353},{"day":71,"fit":80.6218,"fat":108.3823},{"day":72,"fit":81.2116,"fat":108.4222},{"day":73,"fit":81.7891,"fat":108.4559},{"day":74,"fit":82.3544,"fat":108.4844},{"day":75,"fit":82.9078,"fat":108.5086},{"day":76,"fit":83.4496,"fat":108.5291},{"day":77,"fit":83.9799,"fat":108.5464},{"day":78,"fit":84.4991,"fat":108.561},{"day":79,"fit":85.0073,"fat":108.5734},{"day":80,"fit":85.5049,"fat":108.5839},{"day":81,"fit":85.992,"fat":108.5928},{"day":82,"fit":86.4688,"fat":108.6003},{"day":83,"fit":86.9356,"fat":108.6067},{"day":84,"fit":87.3925,"fat":108.6121},{"day":85,"fit":87.8399,"fat":108.6167},{"day":86,"fit":88.2778,"fat":108.6205},{"day":87,"fit":88.7065,"fat":108.6238},{"day":88,"fit":89.1261,"fat":108.6266},{"day":89,"fit":89.537,"fat":108.6289},{"day":90,"fit":89.9392,"fat":108.6309},{"day":91,"fit":90.3329,"fat":108.6326},{"day":92,"fit":90.7183,"fat":108.634},{"day":93,"fit":91.0957,"fat":108.6352},{"day":94,"fit":91.1262,"fat":106.1653},{"day":95,"fit":91.1561,"fat":104.0746},{"day":96,"fit":91.1854,"fat":102.3049},{"day":97,"fit":91.2141,"fat":100.8068},{"day":98,"fit":91.2421,"fat":99.5388},{"day":99,"fit":91.2696,"fat":98.4654},{"day":100,"fit":91.2965,"fat":97.5567},{"day":101,"fit":91.3228,"fat":96.7876},{"day":102,"fit":91.3485,"fat":96.1366},{"day":103,"fit":91.3738,"fat":95.5855},{"day":104,"fit":91.3985,"fat":95.119},{"day":105,"fit":91.4226,"fat":94.7241},{"day":106,"fit":91.4244,"fat":94.2304},{"day":107,"fit":91.3169,"fat":93.0155},{"day":108,"fit":91.1023,"fat":91.19},{"day":109,"fit":90.783,"fat":88.8477},{"day":110,"fit":90.3611,"fat":86.0679},{"day":111,"fit":89.8387,"fat":82.9178},{"day":112,"fit":89.218,"fat":79.4542}];
+const BANISTER_PARAMS={"p0": 1040.0557, "k1": 0.95, "k2": 0.76};
+const BANISTER_DAILY_LOADS=[{"day":-120,"w":0.0},{"day":-119,"w":0.0},{"day":-118,"w":0.0},{"day":-117,"w":0.0},{"day":-116,"w":0.0},{"day":-115,"w":0.0},{"day":-114,"w":0.0},{"day":-113,"w":0.0},{"day":-112,"w":0.0},{"day":-111,"w":0.0},{"day":-110,"w":0.0},{"day":-109,"w":0.0},{"day":-108,"w":0.0},{"day":-107,"w":0.0},{"day":-106,"w":0.0},{"day":-105,"w":0.0},{"day":-104,"w":0.0},{"day":-103,"w":0.0},{"day":-102,"w":0.0},{"day":-101,"w":0.0},{"day":-100,"w":0.0},{"day":-99,"w":0.0},{"day":-98,"w":0.0},{"day":-97,"w":0.0},{"day":-96,"w":0.0},{"day":-95,"w":0.0},{"day":-94,"w":0.0},{"day":-93,"w":0.0},{"day":-92,"w":0.0},{"day":-91,"w":0.0},{"day":-90,"w":0.0},{"day":-89,"w":0.0},{"day":-88,"w":0.0},{"day":-87,"w":0.0},{"day":-86,"w":0.0},{"day":-85,"w":0.0},{"day":-84,"w":0.0},{"day":-83,"w":0.0},{"day":-82,"w":0.0},{"day":-81,"w":0.0},{"day":-80,"w":0.0},{"day":-79,"w":0.0},{"day":-78,"w":0.0},{"day":-77,"w":0.0},{"day":-76,"w":0.0},{"day":-75,"w":0.0},{"day":-74,"w":0.0},{"day":-73,"w":0.0},{"day":-72,"w":0.0},{"day":-71,"w":0.0},{"day":-70,"w":0.0},{"day":-69,"w":0.0},{"day":-68,"w":0.0},{"day":-67,"w":124.078},{"day":-66,"w":0.0},{"day":-65,"w":0.0},{"day":-64,"w":0.0},{"day":-63,"w":45.963},{"day":-62,"w":0.0},{"day":-61,"w":0.0},{"day":-60,"w":0.0},{"day":-59,"w":0.0},{"day":-58,"w":0.0},{"day":-57,"w":0.0},{"day":-56,"w":0.0},{"day":-55,"w":0.0},{"day":-54,"w":0.0},{"day":-53,"w":96.341},{"day":-52,"w":0.0},{"day":-51,"w":87.096},{"day":-50,"w":0.0},{"day":-49,"w":0.0},{"day":-48,"w":0.0},{"day":-47,"w":26.79},{"day":-46,"w":0.0},{"day":-45,"w":0.0},{"day":-44,"w":62.7},{"day":-43,"w":0.0},{"day":-42,"w":0.0},{"day":-41,"w":0.0},{"day":-40,"w":58.4},{"day":-39,"w":0.0},{"day":-38,"w":81.05},{"day":-37,"w":0.0},{"day":-36,"w":0.0},{"day":-35,"w":42.87},{"day":-34,"w":250.948},{"day":-33,"w":0.0},{"day":-32,"w":0.0},{"day":-31,"w":12.1},{"day":-30,"w":71.01},{"day":-29,"w":0.0},{"day":-28,"w":0.0},{"day":-27,"w":0.0},{"day":-26,"w":0.0},{"day":-25,"w":0.0},{"day":-24,"w":0.0},{"day":-23,"w":0.0},{"day":-22,"w":0.0},{"day":-21,"w":0.0},{"day":-20,"w":0.0},{"day":-19,"w":156.976},{"day":-18,"w":0.0},{"day":-17,"w":69.88},{"day":-16,"w":0.0},{"day":-15,"w":0.0},{"day":-14,"w":0.0},{"day":-13,"w":0.0},{"day":-12,"w":96.266},{"day":-11,"w":0.0},{"day":-10,"w":134.606},{"day":-9,"w":55.7},{"day":-8,"w":0.0},{"day":-7,"w":0.0},{"day":-6,"w":0.0},{"day":-5,"w":83.73},{"day":-4,"w":0.0},{"day":-3,"w":97.92},{"day":-2,"w":0.0},{"day":-1,"w":43.774},{"day":0,"w":134.387},{"day":1,"w":0.0},{"day":2,"w":0.0},{"day":3,"w":78.017},{"day":4,"w":0.0},{"day":5,"w":110.632},{"day":6,"w":43.113},{"day":7,"w":136.131},{"day":8,"w":0.0},{"day":9,"w":0.0},{"day":10,"w":96.289},{"day":11,"w":171.072},{"day":12,"w":91.134},{"day":13,"w":0.0},{"day":14,"w":0.0},{"day":15,"w":135.851},{"day":16,"w":181.807},{"day":17,"w":80.77},{"day":18,"w":0.0},{"day":19,"w":112.275},{"day":20,"w":0.0},{"day":21,"w":0.0},{"day":22,"w":132.241},{"day":23,"w":0.0},{"day":24,"w":91.079},{"day":25,"w":125.851},{"day":26,"w":140.342},{"day":27,"w":128.654},{"day":28,"w":82.077},{"day":29,"w":54.17},{"day":30,"w":167.777},{"day":31,"w":0.0},{"day":32,"w":98.911},{"day":33,"w":287.996},{"day":34,"w":0.0},{"day":35,"w":0.0},{"day":36,"w":126.87},{"day":37,"w":175.602},{"day":38,"w":105.929},{"day":39,"w":80.411},{"day":40,"w":115.721},{"day":41,"w":148.265},{"day":42,"w":0.0},{"day":43,"w":115.62},{"day":44,"w":63.586},{"day":45,"w":0.0},{"day":46,"w":199.961},{"day":47,"w":79.699},{"day":48,"w":67.058},{"day":49,"w":142.878},{"day":50,"w":113.59},{"day":51,"w":108.6418},{"day":52,"w":108.6418},{"day":53,"w":108.6418},{"day":54,"w":108.6418},{"day":55,"w":108.6418},{"day":56,"w":108.6418},{"day":57,"w":108.6418},{"day":58,"w":108.6418},{"day":59,"w":108.6418},{"day":60,"w":108.6418},{"day":61,"w":108.6418},{"day":62,"w":108.6418},{"day":63,"w":108.6418},{"day":64,"w":108.6418},{"day":65,"w":108.6418},{"day":66,"w":108.6418},{"day":67,"w":108.6418},{"day":68,"w":108.6418},{"day":69,"w":108.6418},{"day":70,"w":108.6418},{"day":71,"w":108.6418},{"day":72,"w":108.6418},{"day":73,"w":108.6418},{"day":74,"w":108.6418},{"day":75,"w":108.6418},{"day":76,"w":108.6418},{"day":77,"w":108.6418},{"day":78,"w":108.6418},{"day":79,"w":108.6418},{"day":80,"w":108.6418},{"day":81,"w":108.6418},{"day":82,"w":108.6418},{"day":83,"w":108.6418},{"day":84,"w":108.6418},{"day":85,"w":108.6418},{"day":86,"w":108.6418},{"day":87,"w":108.6418},{"day":88,"w":108.6418},{"day":89,"w":108.6418},{"day":90,"w":108.6418},{"day":91,"w":108.6418},{"day":92,"w":108.6418},{"day":93,"w":108.6418},{"day":94,"w":92.5467},{"day":95,"w":92.5467},{"day":96,"w":92.5467},{"day":97,"w":92.5467},{"day":98,"w":92.5467},{"day":99,"w":92.5467},{"day":100,"w":92.5467},{"day":101,"w":92.5467},{"day":102,"w":92.5467},{"day":103,"w":92.5467},{"day":104,"w":92.5467},{"day":105,"w":92.5467},{"day":106,"w":91.5084},{"day":107,"w":86.3164},{"day":108,"w":81.1244},{"day":109,"w":75.9325},{"day":110,"w":70.7405},{"day":111,"w":65.5485},{"day":112,"w":60.3566}];
+const BANISTER_BASE_TAU_FIT=47.0;
+const BANISTER_BASE_TAU_FAT=6.0;
+const BANISTER_PRELOAD_DAYS=120;
+const BANISTER_GOAL_EXPECTED_MAX_S=1018;
+const BANISTER_GOAL_EXPECTATION_WEIGHT=60.0;
 const BANISTER_UPDATED="2026-02-16";
 const BANISTER_UPDATED_DAY=50;
 // BANISTER_DATA_END
@@ -185,6 +239,10 @@ function fmt(s) {
 function dayToDate(d) {
   const dt = new Date(START); dt.setDate(dt.getDate()+d); return dt;
 }
+function fmtTooltipDate(dateValue) {
+  const dt = dateValue instanceof Date ? dateValue : new Date(`${dateValue}T00:00:00`);
+  return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+}
 function normCDF(z) {
   const t = 1/(1+0.2316419*Math.abs(z));
   const p = t*(0.31938153+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
@@ -202,6 +260,30 @@ function trailingMean(values, windowDays) {
     for (let j = start; j <= i; j++) sum += values[j];
     return sum / (i - start + 1);
   });
+}
+
+function getModelDisplaySeries(model, days = Array.from({length: GOAL_DAY + 1}, (_, i) => i)) {
+  const rawY = days.map(t => model.predict(t));
+  return model.key === 'banister' ? trailingMean(rawY, BANISTER_SMOOTHING_DAYS) : rawY;
+}
+
+function getModelDisplayPredictionAt(day, model) {
+  return getModelDisplaySeries(model)[day];
+}
+
+function getModelDescription(model) {
+  if (typeof model.getDesc === 'function') return model.getDesc();
+  return model.desc || '';
+}
+
+function getModelTerms(model) {
+  if (typeof model.getTerms === 'function') return model.getTerms();
+  return model.terms || [];
+}
+
+function getModelCallout(model) {
+  if (typeof model.getCallout === 'function') return model.getCallout();
+  return model.callout || '';
 }
 
 // ─────────────────────────────────────────────────────────
@@ -322,31 +404,156 @@ const MODELS = [
   },
 ];
 
-// Banister model
+// Banister model (supports interactive tau tuning)
+const BANISTER_TAU_LIMITS = {
+  fit: { min: 40, max: 60, step: 1 },
+  fat: { min: 5, max: 12, step: 1 },
+};
+
+const banisterRuntime = {
+  tauFit: typeof BANISTER_BASE_TAU_FIT === 'number' ? BANISTER_BASE_TAU_FIT : 47,
+  tauFat: typeof BANISTER_BASE_TAU_FAT === 'number' ? BANISTER_BASE_TAU_FAT : 6,
+  params: BANISTER_PARAMS ? {...BANISTER_PARAMS} : null,
+  series: Array.isArray(BANISTER_SERIES) ? BANISTER_SERIES.slice() : [],
+  byDay: {},
+  days: [],
+};
+
+function rebuildBanisterIndex() {
+  banisterRuntime.byDay = Object.fromEntries(banisterRuntime.series.map(s => [s.day, s]));
+  banisterRuntime.days = banisterRuntime.series.map(s => s.day).sort((a, b) => a - b);
+}
+rebuildBanisterIndex();
+
+function banisterDecay(tau) {
+  return Math.exp(-1.0 / Math.max(1e-9, tau));
+}
+
+function buildBanisterSeriesForTau(tauFit, tauFat) {
+  const loads = (typeof BANISTER_DAILY_LOADS !== 'undefined' && Array.isArray(BANISTER_DAILY_LOADS))
+    ? BANISTER_DAILY_LOADS : [];
+  if (!loads.length) return null;
+
+  const loadByDay = new Map(loads.map(row => [row.day, row.w]));
+  const minDay = Math.min(...loads.map(row => row.day), -1);
+  const kf = banisterDecay(tauFit);
+  const kn = banisterDecay(tauFat);
+
+  let fit = 0;
+  let fat = 0;
+  for (let day = minDay; day < 0; day++) {
+    const w = loadByDay.get(day) || 0;
+    fit = fit * kf + w * (1 - kf);
+    fat = fat * kn + w * (1 - kn);
+  }
+  const preDay0 = { fit, fat };
+
+  const series = [];
+  for (let day = 0; day <= GOAL_DAY; day++) {
+    const w = loadByDay.get(day) || 0;
+    fit = fit * kf + w * (1 - kf);
+    fat = fat * kn + w * (1 - kn);
+    series.push({ day, fit, fat });
+  }
+  return { series, preDay0 };
+}
+
+function fitBanisterParamsForSeries(series, preDay0) {
+  const byDay = new Map(series.map(s => [s.day, s]));
+  const preraceState = (day) => {
+    if (day <= 0) return preDay0 || { fit: 0, fat: 0 };
+    return byDay.get(day - 1) || { fit: 0, fat: 0 };
+  };
+
+  const samples = races.map(r => {
+    const st = preraceState(r.day);
+    return { day: r.day, time_s: Number(r.s), fit: Number(st.fit), fat: Number(st.fat) };
+  });
+  if (!samples.length) return null;
+  if (Math.max(...samples.map(s => s.fit)) < 0.1) return null;
+
+  const anchor = samples.reduce((a, b) => (a.day >= b.day ? a : b));
+  const goalState = byDay.get(Math.max(0, GOAL_DAY - 1));
+  if (!goalState) return null;
+
+  const goalExpectedMax = (typeof BANISTER_GOAL_EXPECTED_MAX_S === 'number')
+    ? BANISTER_GOAL_EXPECTED_MAX_S : (17 * 60 - 2);
+  const goalWeight = (typeof BANISTER_GOAL_EXPECTATION_WEIGHT === 'number')
+    ? BANISTER_GOAL_EXPECTATION_WEIGHT : 60.0;
+
+  let best = null;
+  const step = 0.05;
+  for (let k1 = 0.2; k1 <= 8.0 + 1e-9; k1 += step) {
+    for (let k2 = Math.max(0.2, 0.8 * k1); k2 <= 8.0 + 1e-9; k2 += step) {
+      let err = 0;
+      for (const s of samples) {
+        const pred = anchor.time_s - k1 * (s.fit - anchor.fit) + k2 * (s.fat - anchor.fat);
+        err += (pred - s.time_s) ** 2;
+      }
+      const p0 = anchor.time_s + k1 * anchor.fit - k2 * anchor.fat;
+      const goalPred = p0 - k1 * goalState.fit + k2 * goalState.fat;
+      if (goalPred > goalExpectedMax) {
+        err += goalWeight * (goalPred - goalExpectedMax) ** 2;
+      }
+      if (!best || err < best.err) best = { err, p0, k1, k2 };
+    }
+  }
+  if (!best) return null;
+
+  const roundTo = (v, d) => {
+    const p = 10 ** d;
+    return Math.round(v * p) / p;
+  };
+  return {
+    p0: roundTo(best.p0, 4),
+    k1: roundTo(best.k1, 6),
+    k2: roundTo(best.k2, 6),
+  };
+}
+
+function recomputeBanisterRuntime() {
+  const built = buildBanisterSeriesForTau(banisterRuntime.tauFit, banisterRuntime.tauFat);
+  if (!built) return false;
+  const params = fitBanisterParamsForSeries(built.series, built.preDay0);
+  if (!params) return false;
+  banisterRuntime.params = params;
+  banisterRuntime.series = [{ day: -1, fit: built.preDay0.fit, fat: built.preDay0.fat }, ...built.series];
+  rebuildBanisterIndex();
+  return true;
+}
+
+function getBanisterStateAtOrBefore(day) {
+  for (let i = banisterRuntime.days.length - 1; i >= 0; i--) {
+    const d = banisterRuntime.days[i];
+    if (d <= day) return banisterRuntime.byDay[d];
+  }
+  return null;
+}
+
 (function () {
   if (!BANISTER_PARAMS || !BANISTER_SERIES.length) return;
-  const {p0, k1, k2} = BANISTER_PARAMS;
-  const byDay = Object.fromEntries(BANISTER_SERIES.map(s => [s.day, s]));
+  recomputeBanisterRuntime();
+
   function banisterPredict(t) {
-    let row = byDay[t];
-    if (!row) {
-      const d = Math.max(...BANISTER_SERIES.filter(s => s.day <= t).map(s => s.day));
-      row = byDay[d];
-    }
-    return row ? p0 - k1 * row.fit + k2 * row.fat : p0;
+    const p = banisterRuntime.params || BANISTER_PARAMS;
+    const stateDay = t <= 0 ? -1 : t - 1;
+    const row = banisterRuntime.byDay[stateDay] || getBanisterStateAtOrBefore(stateDay);
+    return row ? p.p0 - p.k1 * row.fit + p.k2 * row.fat : p.p0;
   }
+
   MODELS.push({
     key: 'banister', label: 'Banister', color: '#e8b84b', dash: 'solid',
     predict: banisterPredict,
-    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 with a simple build \u2192 sharpen \u2192 taper load pattern from your recent 14-day average. During your taper (final 10% of campaign), FAT drops quickly while FIT is maintained \u2014 this should show improving form near race day once the model is well-calibrated from additional races. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    getDesc: () => `Fitness-fatigue model from <a href="https://www.sciepub.com/reference/340730" target="_blank" rel="noopener noreferrer">Banister et al. (1975)</a> fed by actual Strava training data. FIT (\u03c4=${banisterRuntime.tauFit.toFixed(0)}d) accumulates from TRIMP; FAT (\u03c4=${banisterRuntime.tauFat.toFixed(0)}d) decays faster. Projects to Apr 19 with a simple build \u2192 sharpen \u2192 taper load pattern from your recent 14-day average. During taper (final 10% of campaign), FAT should drop faster than FIT, which usually improves form near race day once calibration has enough race anchors. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    callout: 'Why this line is noisy: this curve is predicted 5K time (not TrainingPeaks CTL), and short-term FAT reacts quickly to daily load swings, which creates day-to-day wiggles even when longer-term fitness is rising.',
     formula: 'p(t) = p\u2080 - k\u2081\u00b7FIT(t) + k\u2082\u00b7FAT(t)',
-    terms: [
+    getTerms: () => [
       ['p(t)', 'predicted finish time at day t (seconds)'],
       ['p\u2080', 'baseline time when FIT = FAT = 0'],
       ['k\u2081', 'fitness sensitivity \u2014 how much each FIT unit speeds you up'],
-      ['FIT(t)', 'accumulated fitness; \u03c4=42d exponential moving avg of daily TRIMP'],
+      ['FIT(t)', `accumulated fitness; \u03c4=${banisterRuntime.tauFit.toFixed(0)}d exponential moving avg of daily TRIMP`],
       ['k\u2082', 'fatigue sensitivity \u2014 how much each FAT unit slows you down'],
-      ['FAT(t)', 'accumulated fatigue; \u03c4=7d exponential moving avg of daily TRIMP'],
+      ['FAT(t)', `accumulated fatigue; \u03c4=${banisterRuntime.tauFat.toFixed(0)}d exponential moving avg of daily TRIMP`],
       ['TRIMP', 'Training Impulse = duration(min) \u00d7 HR-ratio \u00d7 exp(1.92 \u00d7 HR-ratio)'],
     ],
   });
@@ -448,6 +655,7 @@ function buildToggles() {
         if (idx >= 0) selectionOrder.splice(idx, 1);
         div.classList.remove('active');
       }
+      updateBanisterControlsVisibility();
       updateChart();
       updateCards();
     };
@@ -460,7 +668,7 @@ function buildToggles() {
 // ─────────────────────────────────────────────────────────
 let chartDays, chartDates;
 function initChartAxes() {
-  chartDays  = Array.from({length:125}, (_,i)=>i);
+  chartDays  = Array.from({length:GOAL_DAY+1}, (_,i)=>i);
   chartDates = chartDays.map(d=>dayToDate(d));
 }
 
@@ -494,14 +702,28 @@ function buildTraces() {
   });
 
   MODELS.forEach(m => {
-    const rawY = chartDays.map(t => m.predict(t));
-    const lineY = m.key === 'banister' ? trailingMean(rawY, BANISTER_SMOOTHING_DAYS) : rawY;
+    const lineY = getModelDisplaySeries(m, chartDays);
     traces.push({
       name: m.label, x: chartDates,
       y: lineY,
       mode:'lines', line:{color:m.color, dash:m.dash, width: m.key === 'ensemble' ? 2.5 : 2},
-      hovertemplate: m.label + ': %{text}<br><span style="color:#9a9590;font-size:0.9em">%{x|%b %-d}</span><extra></extra>',
+      hovertemplate: `⏱️ %{text}<br>📆 %{x|%b %d}<extra></extra>`,
+      hoverlabel: {
+        bgcolor: 'rgba(255,255,255,0.98)',
+        bordercolor: m.color,
+        font: { color: m.color, size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+      },
       text: lineY.map(v=>fmt(v)),
+    });
+    // End-point dot at GOAL_DAY
+    traces.push({
+      name: m.label + ' end',
+      x: [dayToDate(GOAL_DAY)],
+      y: [lineY[lineY.length - 1]],
+      mode: 'markers',
+      marker: { size: 5, color: m.color },
+      hoverinfo: 'skip',
+      showlegend: false,
     });
   });
 
@@ -510,23 +732,43 @@ function buildTraces() {
     x: upcoming.map(r=>dayToDate(r.day)),
     y: upcoming.map(()=>1210),
     mode:'text',
-    text: upcoming.map(()=>'\ud83c\udfbd'),
+    text: upcoming.map(()=>'🏎️'),
     textposition:'top center',
-    textfont:{size:14},
-    hovertemplate: upcoming.map(r=>`${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
+    textfont:{size:17},
+    hovertemplate: upcoming.map(r=>`<b>${r.name}</b><br>📆 ${fmtTooltipDate(r.date)}<br>${Math.max(0, r.day - TODAY_DAY)} day${Math.max(0, r.day - TODAY_DAY) === 1 ? '' : 's'} to race<extra></extra>`),
+    hoverlabel: {
+      bgcolor: 'rgba(255,255,255,0.98)',
+      bordercolor: '#4b4b4b',
+      font: { color: '#2f2f2f', size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+    },
     showlegend:false
   });
 
   traces.push({
-    name:'Race Results',
+    name:'Race Result Labels',
     x: races.map(r=>new Date(r.date)),
     y: races.map(r=>r.s),
-    mode:'markers+text',
-    marker:{size:13, color:'#237a3a', symbol:'circle', line:{color:'#ffffff',width:2}},
+    mode:'text',
     text: races.map(r=>fmt(r.s)),
     textposition:'top center',
     textfont:{color:'#237a3a', size:11, family:'monospace'},
-    hovertemplate: races.map(r=>`<b>${r.name}</b><br>${r.date}<br>Time: ${fmt(r.s)}<extra></extra>`),
+    hoverinfo:'skip',
+    showlegend:false
+  });
+  traces.push({
+    name:'Race Results',
+    x: races.map(r=>new Date(r.date)),
+    y: races.map(r=>r.s),
+    mode:'text',
+    text: races.map(()=>'🏎️'),
+    textposition:'middle center',
+    textfont:{size:17},
+    hovertemplate: races.map(r=>`<b>${r.name}</b><br>⏱️ ${fmt(r.s)}<br>📆 ${fmtTooltipDate(r.date)}<extra></extra>`),
+    hoverlabel: {
+      bgcolor: 'rgba(255,255,255,0.98)',
+      bordercolor: '#4b4b4b',
+      font: { color: '#2f2f2f', size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+    },
     showlegend:false
   });
 
@@ -540,7 +782,7 @@ function buildLayout() {
     paper_bgcolor:'transparent', plot_bgcolor:'rgba(255,255,255,0.6)',
     font:{family:'"Source Sans 3",Georgia,sans-serif', color:'#9a9590', size:11},
     xaxis:{
-      type:'date', range:[new Date('2025-12-22'),new Date('2026-04-26')],
+      type:'date', range:[new Date('2025-12-22'),new Date('2026-04-28')],
       gridcolor:'#e4e1db', tickformat:'%b %-d', showgrid:true, zeroline:false,
     },
     yaxis:{
@@ -549,13 +791,13 @@ function buildLayout() {
     },
     legend:{bgcolor:'rgba(255,255,255,0.92)', bordercolor:'#e4e1db', borderwidth:1,
             font:{size:11}, x:0.01, y:0.01, xanchor:'left', yanchor:'bottom'},
-    margin:{t:16, r:16, b:48, l:72},
+    margin:{t:16, r:60, b:48, l:72},
     hovermode:'closest',
     annotations:[
       {x:dayToDate(GOAL_DAY), y:GOAL_S, xanchor:'right', yanchor:'bottom',
-       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:20}},
+       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:16}},
       {x:dayToDate(TODAY_DAY), y:1215, xanchor:'left', yanchor:'top',
-       text:`\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, font:{color:'#d29922',size:10}},
+       text:`<b>TODAY</b><br>\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, align:'left', font:{color:'#d29922',size:10}},
     ],
     shapes:[
       {type:'line', x0:dayToDate(TODAY_DAY), x1:dayToDate(TODAY_DAY),
@@ -572,33 +814,198 @@ function initChart() {
 }
 
 const MODEL_TRACE_IDX = {};
-MODELS.forEach((m, i) => { MODEL_TRACE_IDX[m.key] = 3 + i; });
+const MODEL_DOT_IDX = {};
+MODELS.forEach((m, i) => {
+  MODEL_TRACE_IDX[m.key] = 3 + i * 2;      // line trace
+  MODEL_DOT_IDX[m.key]   = 3 + i * 2 + 1;  // end-dot trace
+});
 const BAYES_BAND_IDX = [1,2];
 
-function buildGoalAnnotation(m) {
-  const pred = m.predict(GOAL_DAY);
-  const diff = pred - GOAL_S;
-  const sign = diff < 0 ? '\u2212' : '+';
-  const label = `${m.label}<br><b>${fmt(pred)}</b><br><span style="font-size:9px">${sign}${fmt(Math.abs(diff))}</span>`;
-  return {
-    x: dayToDate(GOAL_DAY), y: pred,
-    xanchor: 'right', yanchor: 'middle',
-    text: label,
-    showarrow: true, arrowhead: 1, arrowsize: 0.7,
-    arrowcolor: m.color, ax: -40, ay: 0,
-    bgcolor: 'rgba(255,255,255,0.92)',
-    bordercolor: m.color, borderwidth: 1.5, borderpad: 5,
-    font: { color: m.color, size: 10, family: '"Source Sans 3",sans-serif' },
+function refreshModelTraces() {
+  if (!plotInited) return;
+  MODELS.forEach(m => {
+    const lineY = getModelDisplaySeries(m, chartDays);
+    Plotly.restyle('chart', { y: [lineY], text: [lineY.map(v => fmt(v))] }, [MODEL_TRACE_IDX[m.key]]);
+    Plotly.restyle('chart', { y: [[lineY[lineY.length - 1]]] }, [MODEL_DOT_IDX[m.key]]);
+  });
+}
+
+let tauUpdateFrame = null;
+let tauUpdateNeedsRidge = false;
+function scheduleBanisterTauUpdate(includeRidge) {
+  tauUpdateNeedsRidge = tauUpdateNeedsRidge || includeRidge;
+  if (tauUpdateFrame !== null) return;
+  tauUpdateFrame = requestAnimationFrame(() => {
+    tauUpdateFrame = null;
+    if (!recomputeBanisterRuntime()) return;
+    refreshModelTraces();
+    updateCards();
+    updateChart();
+    if (tauUpdateNeedsRidge) buildRidgePlot();
+    tauUpdateNeedsRidge = false;
+  });
+}
+
+function updateBanisterControlsVisibility() {
+  const el = document.getElementById('banisterControls');
+  if (!el) return;
+  const hasBanister = MODELS.some(m => m.key === 'banister');
+  const hasLoads = (typeof BANISTER_DAILY_LOADS !== 'undefined')
+    && Array.isArray(BANISTER_DAILY_LOADS)
+    && BANISTER_DAILY_LOADS.length > 0;
+  el.hidden = !(hasBanister && hasLoads && active.banister);
+}
+
+function buildBanisterControls() {
+  const el = document.getElementById('banisterControls');
+  if (!el) return;
+  const hasBanister = MODELS.some(m => m.key === 'banister');
+  const hasLoads = (typeof BANISTER_DAILY_LOADS !== 'undefined')
+    && Array.isArray(BANISTER_DAILY_LOADS)
+    && BANISTER_DAILY_LOADS.length > 0;
+  if (!hasBanister || !hasLoads) {
+    el.hidden = true;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="banister-controls-title">Banister Tau Tuning (reasonable range)</div>
+    <div class="banister-controls-grid">
+      <div class="banister-control-row">
+        <label for="tauFitSlider">FIT \u03c4</label>
+        <input id="tauFitSlider" type="range"
+               min="${BANISTER_TAU_LIMITS.fit.min}" max="${BANISTER_TAU_LIMITS.fit.max}" step="${BANISTER_TAU_LIMITS.fit.step}"
+               value="${banisterRuntime.tauFit}">
+        <div class="banister-control-value" id="tauFitValue">${banisterRuntime.tauFit.toFixed(0)}d</div>
+      </div>
+      <div class="banister-control-row">
+        <label for="tauFatSlider">FAT \u03c4</label>
+        <input id="tauFatSlider" type="range"
+               min="${BANISTER_TAU_LIMITS.fat.min}" max="${BANISTER_TAU_LIMITS.fat.max}" step="${BANISTER_TAU_LIMITS.fat.step}"
+               value="${banisterRuntime.tauFat}">
+        <div class="banister-control-value" id="tauFatValue">${banisterRuntime.tauFat.toFixed(0)}d</div>
+      </div>
+    </div>
+    <div class="banister-controls-note">Moving sliders updates the Banister and Ensemble curves on this page.</div>
+  `;
+
+  const fitSlider = document.getElementById('tauFitSlider');
+  const fatSlider = document.getElementById('tauFatSlider');
+  const fitValue = document.getElementById('tauFitValue');
+  const fatValue = document.getElementById('tauFatValue');
+
+  const syncValues = () => {
+    fitValue.textContent = `${banisterRuntime.tauFit.toFixed(0)}d`;
+    fatValue.textContent = `${banisterRuntime.tauFat.toFixed(0)}d`;
   };
+
+  const onInput = () => {
+    banisterRuntime.tauFit = Number(fitSlider.value);
+    banisterRuntime.tauFat = Number(fatSlider.value);
+    syncValues();
+    scheduleBanisterTauUpdate(false);
+  };
+  const onCommit = () => scheduleBanisterTauUpdate(true);
+
+  fitSlider.addEventListener('input', onInput);
+  fatSlider.addEventListener('input', onInput);
+  fitSlider.addEventListener('change', onCommit);
+  fatSlider.addEventListener('change', onCommit);
+  updateBanisterControlsVisibility();
 }
 
 function updateGoalAnnotations() {
   if (!plotInited) return;
-  const base = buildLayout().annotations;
-  const modelAnnotations = MODELS
+  const layout = buildLayout();
+  const baseAnnotations = layout.annotations;
+  const baseShapes = layout.shapes || [];
+
+  // Collect active model predictions and de-overlap vertically
+  const items = MODELS
     .filter(m => active[m.key])
-    .map(m => buildGoalAnnotation(m));
-  Plotly.relayout('chart', { annotations: [...base, ...modelAnnotations] });
+    .map(m => ({ model: m, pred: getModelDisplayPredictionAt(GOAL_DAY, m) }))
+    .sort((a, b) => a.pred - b.pred);
+
+  // Bounded two-pass packing in y-units derived from pixel spacing
+  const yMin = layout.yaxis.range[0];
+  const yMax = layout.yaxis.range[1];
+  const chartEl = document.getElementById('chart');
+  const plotHeightPx = chartEl ? chartEl.clientHeight : 490;
+  const innerHeightPx = Math.max(160, plotHeightPx - layout.margin.t - layout.margin.b);
+  const minGapPx = 24;
+  const edgePadPx = 12;
+  const pxToY = (px) => (px / innerHeightPx) * (yMax - yMin);
+  const minGapY = pxToY(minGapPx);
+  const edgePadY = pxToY(edgePadPx);
+  const lowerBound = yMin + edgePadY;
+  const upperBound = yMax - edgePadY;
+
+  // Initial positions at true predictions
+  items.forEach(it => { it.displayY = it.pred; });
+
+  // Pass 1: forward packing (bottom -> top in y-value space)
+  for (let i = 1; i < items.length; i++) {
+    const minAllowed = items[i - 1].displayY + minGapY;
+    if (items[i].displayY < minAllowed) items[i].displayY = minAllowed;
+  }
+  if (items.length > 0 && items[items.length - 1].displayY > upperBound) {
+    const shiftDown = items[items.length - 1].displayY - upperBound;
+    items.forEach(it => { it.displayY -= shiftDown; });
+  }
+
+  // Pass 2: reverse packing (top -> bottom) after clamping
+  for (let i = items.length - 2; i >= 0; i--) {
+    const maxAllowed = items[i + 1].displayY - minGapY;
+    if (items[i].displayY > maxAllowed) items[i].displayY = maxAllowed;
+  }
+  if (items.length > 0 && items[0].displayY < lowerBound) {
+    const shiftUp = lowerBound - items[0].displayY;
+    items.forEach(it => { it.displayY += shiftUp; });
+    // Re-apply spacing after lower-bound correction
+    for (let i = 1; i < items.length; i++) {
+      const minAllowed = items[i - 1].displayY + minGapY;
+      if (items[i].displayY < minAllowed) items[i].displayY = minAllowed;
+    }
+  }
+
+  const goalDateX = new Date('2026-04-22');  // a few days right of Apr 19
+  const connectorShapes = items.map(it => ({
+    type: 'line',
+    xref: 'x',
+    yref: 'y',
+    x0: dayToDate(GOAL_DAY),
+    y0: it.pred,
+    x1: goalDateX,
+    y1: it.displayY,
+    line: { color: it.model.color, width: 1.2 },
+    layer: 'above',
+  }));
+
+  const modelAnnotations = items.map(it => ({
+    x: goalDateX, y: it.displayY,
+    xanchor: 'left', yanchor: 'middle',
+    text: fmt(it.pred),
+    align: 'center',
+    width: 66,
+    height: 24,
+    valign: 'middle',
+    showarrow: false,
+    bgcolor: 'rgba(255,255,255,0.97)',
+    bordercolor: it.model.color,
+    borderwidth: 1.5,
+    borderpad: 4,
+    font: { color: it.model.color, size: 11, family: '"JetBrains Mono","Courier New",monospace' },
+  }));
+
+  Plotly.relayout('chart', {
+    annotations: [...baseAnnotations, ...modelAnnotations],
+    shapes: [...baseShapes, ...connectorShapes],
+  }).then(() => {
+    document.querySelectorAll('#chart .annotation .bg').forEach(bg => {
+      bg.setAttribute('rx', 8);
+      bg.setAttribute('ry', 8);
+    });
+  });
 }
 
 function updateChart() {
@@ -606,6 +1013,7 @@ function updateChart() {
   MODELS.forEach(m => {
     const vis = active[m.key];
     Plotly.restyle('chart', {visible: vis}, [MODEL_TRACE_IDX[m.key]]);
+    Plotly.restyle('chart', {visible: vis}, [MODEL_DOT_IDX[m.key]]);
     if (m.key === 'bayes') {
       Plotly.restyle('chart', {visible: vis}, BAYES_BAND_IDX);
     }
@@ -625,7 +1033,7 @@ function updateCards() {
     return;
   }
   activeModels.forEach(m => {
-    const pred = m.predict(GOAL_DAY);
+    const pred = getModelDisplayPredictionAt(GOAL_DAY, m);
     const diff = pred - GOAL_S;
     const onTrack = diff < 0;
     const close = Math.abs(diff) < 45;
@@ -635,6 +1043,9 @@ function updateCards() {
       : `\u2717 Misses by ${fmt(diff)}`;
     const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - pred) / sharedUncert) * 100)));
     const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
+    const desc = getModelDescription(m);
+    const callout = getModelCallout(m);
+    const terms = getModelTerms(m);
 
     el.innerHTML += `
       <div class="card" id="card-${m.key}">
@@ -654,10 +1065,11 @@ function updateCards() {
             <span class="${cls}" style="font-weight:600;font-size:0.74rem;">${assessment}</span>
           </div>
         </div>
-        <div class="card-desc">${m.desc}</div>
+        <div class="card-desc">${desc}</div>
+        ${callout ? `<div class="model-callout">${callout}</div>` : ''}
         <div class="pred-box">
           <div class="pred-row"><span class="pred-k">Formula</span><span class="pred-v" style="font-size:0.73em;color:var(--muted)">${m.formula}</span></div>
-          ${(m.terms || []).length ? `<div style="margin-top:8px;">${(m.terms || []).map(([sym, def]) =>
+          ${terms.length ? `<div style="margin-top:8px;">${terms.map(([sym, def]) =>
             `<div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
                <span style="font-family:'JetBrains Mono','Courier New',monospace;font-size:0.69rem;color:var(--text);min-width:56px;flex-shrink:0;">${sym}</span>
                <span style="font-size:0.72rem;color:var(--muted);line-height:1.45;">${def}</span>
@@ -683,13 +1095,13 @@ function buildRidgePlot() {
     return Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
   }
 
-  const sorted = [...MODELS].sort((a, b) => b.predict(GOAL_DAY) - a.predict(GOAL_DAY));
+  const sorted = [...MODELS].sort((a, b) => getModelDisplayPredictionAt(GOAL_DAY, b) - getModelDisplayPredictionAt(GOAL_DAY, a));
 
   const traces = [];
   const annotations = [];
 
   sorted.forEach((m, i) => {
-    const mu = m.predict(GOAL_DAY);
+    const mu = getModelDisplayPredictionAt(GOAL_DAY, m);
     const yBase = i * gap;
     const prob = Math.max(1, Math.min(99, Math.round(normCDF((GOAL_S - mu) / sigma) * 100)));
     const barColor = prob >= 50 ? '#3fb950' : prob >= 30 ? '#d29922' : '#f85149';
@@ -811,6 +1223,7 @@ function buildRidgePlot() {
 buildWeekRow();
 buildStats();
 buildToggles();
+buildBanisterControls();
 updateCards();
 buildRidgePlot();
 initChart();

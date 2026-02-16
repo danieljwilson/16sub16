@@ -1,6 +1,217 @@
 {
   "activities": [
     {
+      "source": "strava",
+      "strava_id": 16222229390,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -67,
+      "duration_s": 3288,
+      "avg_hr": null,
+      "trimp": 124.078
+    },
+    {
+      "source": "strava",
+      "strava_id": 16263033469,
+      "name": "Baseline 5k",
+      "sport_type": "Run",
+      "day": -63,
+      "duration_s": 1218,
+      "avg_hr": null,
+      "trimp": 45.963
+    },
+    {
+      "source": "strava",
+      "strava_id": 16361249943,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -53,
+      "duration_s": 2553,
+      "avg_hr": null,
+      "trimp": 96.341
+    },
+    {
+      "source": "strava",
+      "strava_id": 16385271866,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -51,
+      "duration_s": 2308,
+      "avg_hr": null,
+      "trimp": 87.096
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-11|Run|Running|1326|26.79",
+      "name": "Running",
+      "sport_type": "Run",
+      "day": -47,
+      "duration_s": 1326,
+      "avg_hr": null,
+      "tss": 26.79,
+      "trimp": 26.79
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-14|Run|Easy 10k|2823|62.7",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -44,
+      "duration_s": 2823,
+      "avg_hr": null,
+      "tss": 62.7,
+      "trimp": 62.7
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-18|Run|Easy 10k|4330|58.4",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -40,
+      "duration_s": 4330,
+      "avg_hr": 173.0,
+      "tss": 58.4,
+      "trimp": 58.4
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-20|Run|Easy 10k|4937|81.05",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -38,
+      "duration_s": 4937,
+      "avg_hr": 168.0,
+      "tss": 81.05,
+      "trimp": 81.05
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-23|Run|Running|2516|42.87",
+      "name": "Running",
+      "sport_type": "Run",
+      "day": -35,
+      "duration_s": 2516,
+      "avg_hr": 154.0,
+      "tss": 42.87,
+      "trimp": 42.87
+    },
+    {
+      "source": "strava",
+      "strava_id": 16556661502,
+      "name": "Long run: W3D1 of 16W to sub-16",
+      "sport_type": "Run",
+      "day": -34,
+      "duration_s": 6650,
+      "avg_hr": null,
+      "trimp": 250.948
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-27|Run|Running|729|12.1",
+      "name": "Running",
+      "sport_type": "Run",
+      "day": -31,
+      "duration_s": 729,
+      "avg_hr": 126.0,
+      "tss": 12.1,
+      "trimp": 12.1
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-11-28|Run|Easy 10k|1797|71.01",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -30,
+      "duration_s": 1797,
+      "avg_hr": 149.0,
+      "tss": 71.01,
+      "trimp": 71.01
+    },
+    {
+      "source": "strava",
+      "strava_id": 16692861510,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -19,
+      "duration_s": 3818,
+      "avg_hr": 139.5,
+      "trimp": 156.976
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-12-11|Run|Easy 15k|2216|69.88",
+      "name": "Easy 15k",
+      "sport_type": "Run",
+      "day": -17,
+      "duration_s": 2216,
+      "avg_hr": 139.0,
+      "tss": 69.88,
+      "trimp": 69.88
+    },
+    {
+      "source": "strava",
+      "strava_id": 16758119430,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -12,
+      "duration_s": 2551,
+      "avg_hr": null,
+      "trimp": 96.266
+    },
+    {
+      "source": "strava",
+      "strava_id": 16775992292,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -10,
+      "duration_s": 3567,
+      "avg_hr": null,
+      "trimp": 134.606
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-12-19|Run|Running|1913|55.7",
+      "name": "Running",
+      "sport_type": "Run",
+      "day": -9,
+      "duration_s": 1913,
+      "avg_hr": 128.0,
+      "tss": 55.7,
+      "trimp": 55.7
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-12-23|Run|Easy 10k|2770|83.73",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -5,
+      "duration_s": 2770,
+      "avg_hr": 130.0,
+      "tss": 83.73,
+      "trimp": 83.73
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2025-12-25|Run|Easy 10k|2733|97.92",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": -3,
+      "duration_s": 2733,
+      "avg_hr": 130.0,
+      "tss": 97.92,
+      "trimp": 97.92
+    },
+    {
+      "source": "strava",
+      "strava_id": 16852471802,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -1,
+      "duration_s": 1160,
+      "avg_hr": null,
+      "trimp": 43.774
+    },
+    {
       "strava_id": 16867115788,
       "name": "Afternoon Run",
       "day": 0,
@@ -63,6 +274,17 @@
       "duration_s": 2415,
       "avg_hr": null,
       "trimp": 91.134
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2026-01-12|Run|Easy 10k|3600|",
+      "name": "Easy 10k",
+      "sport_type": "Run",
+      "day": 15,
+      "duration_s": 3600,
+      "avg_hr": null,
+      "tss": null,
+      "trimp": 135.851
     },
     {
       "strava_id": 17034530016,
@@ -145,6 +367,28 @@
       "trimp": 58.647
     },
     {
+      "source": "trainingpeaks",
+      "tp_key": "2026-01-25|Run|Running|1283|23.43",
+      "name": "Running",
+      "sport_type": "Run",
+      "day": 28,
+      "duration_s": 1283,
+      "avg_hr": 116.0,
+      "tss": 23.43,
+      "trimp": 23.43
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2026-01-26|Run|Easy 10k - bike replace|3900|54.17",
+      "name": "Easy 10k - bike replace",
+      "sport_type": "Run",
+      "day": 29,
+      "duration_s": 3900,
+      "avg_hr": 135.0,
+      "tss": 54.17,
+      "trimp": 54.17
+    },
+    {
       "strava_id": 17192069807,
       "name": "Morning Run",
       "day": 30,
@@ -167,6 +411,17 @@
       "duration_s": 4174,
       "avg_hr": 138.1,
       "trimp": 165.856
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2026-01-30|Run|2 x 8|3097|122.14",
+      "name": "2 x 8",
+      "sport_type": "Run",
+      "day": 33,
+      "duration_s": 3097,
+      "avg_hr": 138.0,
+      "tss": 122.14,
+      "trimp": 122.14
     },
     {
       "strava_id": 17259224068,
@@ -257,12 +512,12 @@
       "trimp": 67.058
     },
     {
-      "strava_id": 17405818331,
-      "name": "Warm up",
+      "strava_id": 17405818279,
+      "name": "Cool down",
       "day": 49,
-      "duration_s": 1345,
-      "avg_hr": 117.0,
-      "trimp": 30.946
+      "duration_s": 1208,
+      "avg_hr": 125.8,
+      "trimp": 35.192
     },
     {
       "strava_id": 17405818275,
@@ -273,13 +528,24 @@
       "trimp": 76.74
     },
     {
-      "strava_id": 17405818279,
-      "name": "Cool down",
+      "strava_id": 17405818331,
+      "name": "Warm up",
       "day": 49,
-      "duration_s": 1208,
-      "avg_hr": 125.8,
-      "trimp": 35.192
+      "duration_s": 1345,
+      "avg_hr": 117.0,
+      "trimp": 30.946
+    },
+    {
+      "source": "trainingpeaks",
+      "tp_key": "2026-02-16|Run|Easy + Strides|3436|113.59",
+      "name": "Easy + Strides",
+      "sport_type": "Run",
+      "day": 50,
+      "duration_s": 3436,
+      "avg_hr": 132.0,
+      "tss": 113.59,
+      "trimp": 113.59
     }
   ],
-  "last_fetch_epoch": 1771271231
+  "last_fetch_epoch": 1771271338
 }

@@ -3,7 +3,7 @@
 update_banister.py — Strava → Banister fitness-fatigue pipeline.
 
 Fetches recent runs from the Strava API, computes daily TRIMP, accumulates
-FIT (τ=42d) and FAT (τ=7d) time series, fits p₀/k₁/k₂ from known race
+FIT (τ=47d) and FAT (τ=6d) time series, fits p₀/k₁/k₂ from known race
 times, then injects the result into 16sub16_tracker.html.
 
 Usage:
@@ -12,6 +12,8 @@ Usage:
 """
 
 import argparse
+import csv
+import io
 import json
 import math
 import os
@@ -21,7 +23,8 @@ import time
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import datetime, timezone, date
+import zipfile
+from datetime import datetime, timezone, date, timedelta
 from pathlib import Path
 
 # ─────────────────────────────────────────────────────────
@@ -35,6 +38,8 @@ LOG_PATH  = ROOT / "data" / "training_log.json"
 START_DATE  = date(2025, 12, 28)
 GOAL_DAY    = 112                 # Apr 19, 2026
 START_EPOCH = 1735344000          # 2025-12-28T00:00:00 UTC (approx)
+PRELOAD_DAYS = 120                # warmup lookback to seed day-0 FIT/FAT
+REFIT_REMINDER_DAY = 63           # Mar 1, 2026 checkpoint race
 
 # Race results for fitting p₀, k₁, k₂
 # day = days since START_DATE; time_s = finish time in seconds
@@ -49,8 +54,8 @@ REST_HR = 45
 MAX_HR  = 185
 
 # Banister time constants (days)
-TAU_FIT = 42.0
-TAU_FAT = 7.0
+TAU_FIT = 47.0
+TAU_FAT = 6.0
 
 # Projection settings (future days > t_today)
 # Phase-based projection: modest build, then sharpening, then taper.
@@ -59,6 +64,27 @@ PROJ_SHARPEN_END_FRACTION = 0.90     # next 20%; final 10% is taper
 PROJ_BUILD_LOAD_FACTOR = 1.08
 PROJ_SHARPEN_LOAD_FACTOR = 0.92
 PROJ_TAPER_FINAL_FACTOR = 0.60
+
+# Goal-conditioning prior (soft constraint, not a hard override).
+# If you have a strong expectation for race-day performance, the fitter can
+# penalize parameter sets that miss this target while still respecting race data.
+GOAL_EXPECTED_MAX_S = 17 * 60 - 2   # "sub-17" expectation buffer
+GOAL_EXPECTATION_WEIGHT = 60.0       # higher => stronger pull toward expectation
+
+# TrainingPeaks import settings
+TP_TSS_TO_TRIMP = 1.0
+TP_DEFAULT_SPORT_FACTOR = 0.30
+TP_SPORT_FACTORS = {
+    "run": 1.00,
+    "bike": 0.45,
+    "ride": 0.45,
+    "virtualride": 0.45,
+    "swim": 0.25,
+    "strength": 0.15,
+    "other": 0.30,
+}
+TP_RUN_DUP_TOL_S = 180
+TP_RUN_DUP_TOL_FRACTION = 0.20
 
 # Strava OAuth
 STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token"
@@ -143,6 +169,34 @@ def compute_trimp(duration_s, avg_hr=None):
     return round(trimp, 3)
 
 
+def _to_float(v):
+    if v is None:
+        return None
+    s = str(v).strip()
+    if not s:
+        return None
+    try:
+        return float(s)
+    except Exception:
+        return None
+
+
+def _parse_date(s):
+    s = (s or "").strip()
+    if not s:
+        return None
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            pass
+    return None
+
+
+def _norm_sport(s):
+    return re.sub(r"[^a-z]", "", (s or "").strip().lower())
+
+
 # ─────────────────────────────────────────────────────────
 # TRAINING LOG
 # ─────────────────────────────────────────────────────────
@@ -173,8 +227,22 @@ def merge_activities(log, raw_activities):
     - Filters to Run types only
     - Only keeps days 0..GOAL_DAY
     """
-    existing_ids = {a["strava_id"] for a in log["activities"]}
+    existing_ids = {a["strava_id"] for a in log["activities"] if "strava_id" in a}
+    # If TP runs were imported first, avoid double-counting overlapping Strava runs.
+    non_strava_run_durations_by_day = {}
+    for a in log["activities"]:
+        source = a.get("source")
+        if source is None and "strava_id" in a:
+            source = "strava"
+        sport_key = _norm_sport(a.get("sport_type") or ("Run" if source == "strava" else ""))
+        if source != "strava" and sport_key == "run":
+            d = int(a.get("day", 0))
+            dur = int(a.get("duration_s", 0))
+            if dur > 0:
+                non_strava_run_durations_by_day.setdefault(d, []).append(dur)
+
     added = 0
+    skipped_dupe = 0
     for act in raw_activities:
         if act.get("type") != "Run" and act.get("sport_type") != "Run":
             continue
@@ -187,23 +255,170 @@ def merge_activities(log, raw_activities):
             .timestamp()
         )
         campaign_day = _epoch_to_campaign_day(start_epoch)
-        if campaign_day < 0 or campaign_day > GOAL_DAY:
+        if campaign_day < -PRELOAD_DAYS or campaign_day > GOAL_DAY:
             continue
+        duration_s = int(act.get("elapsed_time", 0) or 0)
+
+        dup_hit = False
+        for other_dur in non_strava_run_durations_by_day.get(campaign_day, []):
+            tol = max(TP_RUN_DUP_TOL_S, int(TP_RUN_DUP_TOL_FRACTION * max(other_dur, duration_s)))
+            if abs(other_dur - duration_s) <= tol:
+                dup_hit = True
+                break
+        if dup_hit:
+            skipped_dupe += 1
+            continue
+
         avg_hr = act.get("average_heartrate") or None
-        trimp = compute_trimp(act.get("elapsed_time", 0), avg_hr)
+        trimp = compute_trimp(duration_s, avg_hr)
         log["activities"].append({
+            "source":       "strava",
             "strava_id":    sid,
             "name":         act.get("name", ""),
+            "sport_type":   "Run",
             "day":          campaign_day,
-            "duration_s":   act.get("elapsed_time", 0),
+            "duration_s":   duration_s,
             "avg_hr":       avg_hr,
             "trimp":        trimp,
         })
+        if duration_s > 0:
+            non_strava_run_durations_by_day.setdefault(campaign_day, []).append(duration_s)
         existing_ids.add(sid)
         added += 1
     # Sort by day ascending
     log["activities"].sort(key=lambda a: a["day"])
-    return added
+    return {"added": added, "skipped_dupe": skipped_dupe}
+
+
+def merge_trainingpeaks_zip(log, zip_path, include_all_sports=False):
+    """
+    Merge TrainingPeaks WorkoutExport ZIP into the unified training log.
+    - Reads workouts.csv inside ZIP
+    - Converts TSS (or HR-derived TRIMP fallback) to load
+    - Default behavior: imports Run only (to avoid sport-mixing bias)
+    - Optional all-sports mode applies sport-weight factors
+    - Keeps only days in [-PRELOAD_DAYS, GOAL_DAY]
+    - Skips likely duplicate Strava runs on same day with similar duration
+    """
+    zp = Path(zip_path)
+    if not zp.exists():
+        raise FileNotFoundError(f"TrainingPeaks ZIP not found: {zp}")
+
+    with zipfile.ZipFile(zp, "r") as zf:
+        names = [n for n in zf.namelist() if n.lower().endswith(".csv")]
+        if not names:
+            raise RuntimeError(f"No CSV found in ZIP: {zp}")
+        target = None
+        for n in names:
+            if Path(n).name.lower() == "workouts.csv":
+                target = n
+                break
+        if target is None:
+            target = names[0]
+
+        with zf.open(target) as raw_fp:
+            text_fp = io.TextIOWrapper(raw_fp, encoding="utf-8-sig", newline="")
+            reader = csv.DictReader(text_fp)
+            rows = list(reader)
+
+    existing_tp_keys = {
+        a.get("tp_key")
+        for a in log["activities"]
+        if a.get("source") == "trainingpeaks" and a.get("tp_key")
+    }
+    strava_run_durations_by_day = {}
+    for a in log["activities"]:
+        source = a.get("source")
+        if source is None and "strava_id" in a:
+            source = "strava"
+        sport = (a.get("sport_type") or "").lower()
+        if source == "strava" and (sport in ("", "run")):
+            d = int(a.get("day", 0))
+            strava_run_durations_by_day.setdefault(d, []).append(int(a.get("duration_s", 0)))
+
+    added = 0
+    skipped_dupe = 0
+    skipped_empty = 0
+    skipped_non_run = 0
+
+    for row in rows:
+        day_date = _parse_date(row.get("WorkoutDay"))
+        if day_date is None:
+            continue
+        campaign_day = (day_date - START_DATE).days
+        if campaign_day < -PRELOAD_DAYS or campaign_day > GOAL_DAY:
+            continue
+
+        workout_type = (row.get("WorkoutType") or "Other").strip() or "Other"
+        sport_key = _norm_sport(workout_type)
+        if not include_all_sports and sport_key != "run":
+            skipped_non_run += 1
+            continue
+        sport_factor = TP_SPORT_FACTORS.get(sport_key, TP_DEFAULT_SPORT_FACTOR)
+
+        title = (row.get("Title") or row.get("WorkoutDescription") or workout_type).strip()
+
+        duration_h = _to_float(row.get("TimeTotalInHours")) or 0.0
+        duration_s = int(round(duration_h * 3600.0))
+        avg_hr = _to_float(row.get("HeartRateAverage"))
+        tss = _to_float(row.get("TSS"))
+
+        raw_load = None
+        if tss is not None and tss > 0:
+            raw_load = tss * TP_TSS_TO_TRIMP
+        elif duration_s > 0:
+            raw_load = compute_trimp(duration_s, avg_hr)
+        else:
+            skipped_empty += 1
+            continue
+
+        if include_all_sports:
+            trimp = round(float(raw_load) * sport_factor, 3)
+        else:
+            trimp = round(float(raw_load), 3)
+        if trimp <= 0:
+            skipped_empty += 1
+            continue
+
+        tp_key = (
+            f"{day_date.isoformat()}|{workout_type}|{title}|{duration_s}|"
+            f"{'' if tss is None else round(tss, 2)}"
+        )
+        if tp_key in existing_tp_keys:
+            continue
+
+        if sport_key == "run" and duration_s > 0:
+            dup_hit = False
+            for sd in strava_run_durations_by_day.get(campaign_day, []):
+                tol = max(TP_RUN_DUP_TOL_S, int(TP_RUN_DUP_TOL_FRACTION * max(sd, duration_s)))
+                if abs(sd - duration_s) <= tol:
+                    dup_hit = True
+                    break
+            if dup_hit:
+                skipped_dupe += 1
+                continue
+
+        log["activities"].append({
+            "source": "trainingpeaks",
+            "tp_key": tp_key,
+            "name": title,
+            "sport_type": workout_type,
+            "day": campaign_day,
+            "duration_s": duration_s,
+            "avg_hr": avg_hr,
+            "tss": tss,
+            "trimp": trimp,
+        })
+        existing_tp_keys.add(tp_key)
+        added += 1
+
+    log["activities"].sort(key=lambda a: (a["day"], a.get("source", ""), a.get("name", "")))
+    return {
+        "added": added,
+        "skipped_dupe": skipped_dupe,
+        "skipped_empty": skipped_empty,
+        "skipped_non_run": skipped_non_run,
+    }
 
 
 # ─────────────────────────────────────────────────────────
@@ -225,8 +440,8 @@ def build_series(activities, t_today):
     # Aggregate TRIMP per campaign day
     trimp_by_day = {}
     for act in activities:
-        d = act["day"]
-        trimp_by_day[d] = trimp_by_day.get(d, 0.0) + act["trimp"]
+        d = int(act["day"])
+        trimp_by_day[d] = trimp_by_day.get(d, 0.0) + float(act["trimp"])
 
     # Mean daily TRIMP for the last 14 days up to t_today
     recent_days = [d for d in range(max(0, t_today - 13), t_today + 1)]
@@ -236,13 +451,16 @@ def build_series(activities, t_today):
     kf = _decay(TAU_FIT)
     kn = _decay(TAU_FAT)
 
+    # Build a complete daily load series for interactive tau recalculation in HTML.
     fit = 0.0
     fat = 0.0
     series = []
+    daily_loads = []
+    load_by_day = {}
 
     days_to_goal = max(1, GOAL_DAY - t_today)
 
-    for day in range(GOAL_DAY + 1):
+    for day in range(-PRELOAD_DAYS, GOAL_DAY + 1):
         if day <= t_today:
             w = trimp_by_day.get(day, 0.0)
         else:
@@ -260,12 +478,22 @@ def build_series(activities, t_today):
                     + (PROJ_TAPER_FINAL_FACTOR - PROJ_SHARPEN_LOAD_FACTOR) * taper_progress
                 )
             w = mean_trimp * max(0.0, load_factor)
+        load_by_day[day] = float(w)
+        daily_loads.append({"day": day, "w": round(float(w), 4)})
 
+    for day in range(-PRELOAD_DAYS, 0):
+        w = load_by_day.get(day, 0.0)
+        fit = fit * kf + w * (1 - kf)
+        fat = fat * kn + w * (1 - kn)
+    pre_day0 = {"fit": round(fit, 4), "fat": round(fat, 4)}
+
+    for day in range(GOAL_DAY + 1):
+        w = load_by_day.get(day, 0.0)
         fit = fit * kf + w * (1 - kf)
         fat = fat * kn + w * (1 - kn)
         series.append({"day": day, "fit": round(fit, 4), "fat": round(fat, 4)})
 
-    return series, mean_trimp
+    return series, mean_trimp, pre_day0, daily_loads
 
 
 def _gauss(A, b):
@@ -300,70 +528,91 @@ def _gauss(A, b):
     return x
 
 
-def fit_params(series):
+def fit_params(series, pre_day0=None):
     """
-    Fit p₀, k₁, k₂ from race results using OLS normal equations.
+    Fit p₀, k₁, k₂ from race results using pre-race state and latest-race anchoring.
 
-    Model: p(t) = p₀ − k₁·FIT(t) + k₂·FAT(t)
-    Rewrite as: p(t) = c₀·1 + c₁·(−FIT(t)) + c₂·FAT(t)
+    Model: p(t) = p₀ − k₁·FIT(t) + k₂·FAT(t), evaluated on pre-race state.
+    A race on day d is fit against state from day d-1 (or zero state for day 0).
 
-    Uses a 3×3 system (one equation per race).
-    Returns dict {p0, k1, k2} or None if data insufficient / unphysical.
+    To improve practical calibration with sparse race anchors, solve for k₁/k₂ from
+    race-to-race deltas and force exact agreement at the latest race (anchor):
+      p(anchor) == latest race time
+    Then recover p₀ analytically from the anchor equation.
+
+    Returns dict {p0, k1, k2} or None if data insufficient.
     """
     by_day = {s["day"]: s for s in series}
 
-    # Check we have enough FIT variance
-    fit_vals = [by_day.get(r["day"], {}).get("fit", 0.0) for r in RACE_RESULTS]
+    def prerace_state(day):
+        if day <= 0:
+            if pre_day0:
+                return pre_day0
+            return {"fit": 0.0, "fat": 0.0}
+        s = by_day.get(day - 1)
+        if s is None:
+            return {"fit": 0.0, "fat": 0.0}
+        return s
+
+    samples = []
+    for r in RACE_RESULTS:
+        s = prerace_state(r["day"])
+        samples.append({
+            "day": r["day"],
+            "time_s": float(r["time_s"]),
+            "fit": float(s["fit"]),
+            "fat": float(s["fat"]),
+        })
+
+    # Check we have enough fitness spread to identify a meaningful signal.
+    fit_vals = [s["fit"] for s in samples]
     if max(fit_vals) < 0.1:
         return None  # No real training data yet
 
-    # Build 3×3 normal equations for exactly 3 race points
-    # [1, -FIT, FAT] · [p0, k1, k2]^T = time_s
-    rows = []
-    rhs  = []
-    for r in RACE_RESULTS:
-        s = by_day.get(r["day"])
-        if s is None:
-            return None
-        rows.append([1.0, -s["fit"], s["fat"]])
-        rhs.append(float(r["time_s"]))
+    # Anchor to the latest race so current known performance is matched exactly.
+    anchor = max(samples, key=lambda s: s["day"])
+    a_fit = anchor["fit"]
+    a_fat = anchor["fat"]
+    a_time = anchor["time_s"]
 
-    # Normal equations: A^T A x = A^T b
-    A = rows
-    b = rhs
-    # A^T A
-    ATA = [[sum(A[k][i] * A[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
-    ATb = [sum(A[k][i] * b[k] for k in range(3)) for i in range(3)]
+    # Constrained least squares over (k1, k2), with p0 recovered from anchor:
+    # p0 = t_anchor + k1*FIT_anchor - k2*FAT_anchor
+    # and prediction for any sample i:
+    # p_i = t_anchor - k1*(fit_i - fit_anchor) + k2*(fat_i - fat_anchor)
+    #
+    # Constraint keeps taper behavior physiologically plausible.
+    #
+    # Add a soft goal-day prior so forecast aligns with stated expectation
+    # without becoming a hard-coded result.
+    goal_state = by_day.get(max(0, GOAL_DAY - 1))
+    if goal_state is None:
+        return None
+    g_fit = float(goal_state["fit"])
+    g_fat = float(goal_state["fat"])
 
-    sol = _gauss(ATA, ATb)
-    if sol is not None:
-        p0, k1, k2 = sol
-        # Prefer physically sensible solutions:
-        # fitness helps (k1>0), fatigue hurts (k2>0), and fatigue coefficient is
-        # at least 80% of fitness coefficient so the taper (fast FAT drop) predicts
-        # improving form near race day rather than worsening.
-        if k1 > 0 and k2 > 0 and k2 >= 0.8 * k1:
-            return {"p0": round(p0, 4), "k1": round(k1, 6), "k2": round(k2, 6)}
-
-    # Fallback: constrained least squares over (k1, k2), solve p0 analytically.
-    # This avoids unstable/unphysical exact fits from only three race points.
-    # Constraint: k2 >= 0.8*k1 (fatigue effect meaningfully competes during taper).
-    fit_fat_time = [(s["fit"], s["fat"], float(r["time_s"])) for s, r in zip([by_day[r["day"]] for r in RACE_RESULTS], RACE_RESULTS)]
     best = None
-    k1 = 0.5
+    step = 0.05
+    k1 = 0.2
     while k1 <= 8.0 + 1e-9:
-        k2_min = max(1.0, 0.8 * k1)
+        k2_min = max(0.2, 0.8 * k1)
         k2 = k2_min
         while k2 <= 8.0 + 1e-9:
-            p0 = sum(t + k1 * fit - k2 * fat for fit, fat, t in fit_fat_time) / len(fit_fat_time)
             err = 0.0
-            for fit, fat, t in fit_fat_time:
-                pred = p0 - k1 * fit + k2 * fat
+            for s in samples:
+                pred = a_time - k1 * (s["fit"] - a_fit) + k2 * (s["fat"] - a_fat)
+                t = s["time_s"]
                 err += (pred - t) ** 2
+
+            # Soft prior: prefer parameter sets that get to at least sub-17.
+            p0 = a_time + k1 * a_fit - k2 * a_fat
+            goal_pred = p0 - k1 * g_fit + k2 * g_fat
+            if goal_pred > GOAL_EXPECTED_MAX_S:
+                err += GOAL_EXPECTATION_WEIGHT * (goal_pred - GOAL_EXPECTED_MAX_S) ** 2
+
             if best is None or err < best["err"]:
                 best = {"err": err, "p0": p0, "k1": k1, "k2": k2}
-            k2 += 0.1
-        k1 += 0.1
+            k2 += step
+        k1 += step
 
     if best is None:
         return None
@@ -378,7 +627,7 @@ def fit_params(series):
 # ─────────────────────────────────────────────────────────
 # HTML INJECTION
 # ─────────────────────────────────────────────────────────
-def inject_into_html(series, params, t_today, dry_run=False):
+def inject_into_html(series, params, t_today, pre_day0=None, daily_loads=None, dry_run=False):
     """
     Replace the content between // BANISTER_DATA_START and // BANISTER_DATA_END
     markers in 16sub16_tracker.html with updated JS constants.
@@ -389,11 +638,19 @@ def inject_into_html(series, params, t_today, dry_run=False):
 
     html = HTML_PATH.read_text(encoding="utf-8")
 
-    # Compact series: only entries where fit > 0.01
-    compact = [s for s in series if s["fit"] > 0.01]
+    # Compact series: include pre-day0 state (-1) plus all modeled campaign days.
+    compact = []
+    if pre_day0 is not None:
+        compact.append({
+            "day": -1,
+            "fit": round(float(pre_day0.get("fit", 0.0)), 4),
+            "fat": round(float(pre_day0.get("fat", 0.0)), 4),
+        })
+    compact.extend(s for s in series if s["fit"] > 0.01)
     series_json = json.dumps(compact, separators=(",", ":"))
 
     params_json = json.dumps(params) if params else "null"
+    loads_json = json.dumps(daily_loads or [], separators=(",", ":"))
 
     today_str = date.today().isoformat()
 
@@ -401,6 +658,12 @@ def inject_into_html(series, params, t_today, dry_run=False):
         "// BANISTER_DATA_START\n"
         f"const BANISTER_SERIES={series_json};\n"
         f"const BANISTER_PARAMS={params_json};\n"
+        f"const BANISTER_DAILY_LOADS={loads_json};\n"
+        f"const BANISTER_BASE_TAU_FIT={TAU_FIT};\n"
+        f"const BANISTER_BASE_TAU_FAT={TAU_FAT};\n"
+        f"const BANISTER_PRELOAD_DAYS={PRELOAD_DAYS};\n"
+        f"const BANISTER_GOAL_EXPECTED_MAX_S={GOAL_EXPECTED_MAX_S};\n"
+        f"const BANISTER_GOAL_EXPECTATION_WEIGHT={GOAL_EXPECTATION_WEIGHT};\n"
         f"const BANISTER_UPDATED={json.dumps(today_str)};\n"
         f"const BANISTER_UPDATED_DAY={t_today};\n"
         "// BANISTER_DATA_END"
@@ -439,12 +702,35 @@ def main():
     parser = argparse.ArgumentParser(description="Update Banister model from Strava.")
     parser.add_argument("--dry-run", action="store_true",
                         help="Fetch data and compute, but do not write files")
+    parser.add_argument(
+        "--backfill-from",
+        help="Override Strava fetch cursor for this run (YYYY-MM-DD).",
+    )
+    parser.add_argument(
+        "--import-trainingpeaks-zip",
+        action="append",
+        default=[],
+        help="Path to TrainingPeaks WorkoutExport ZIP (repeat flag for multiple files).",
+    )
+    parser.add_argument(
+        "--trainingpeaks-all-sports",
+        action="store_true",
+        help="Import all TP workout types with sport-weighted load (default: Run only).",
+    )
     args = parser.parse_args()
 
     today = date.today()
     t_today = min(GOAL_DAY, max(0, (today - START_DATE).days))
 
     print(f"Campaign day: {t_today} / {GOAL_DAY}  ({today})")
+    if t_today < REFIT_REMINDER_DAY and not any(
+        r.get("day") == REFIT_REMINDER_DAY for r in RACE_RESULTS
+    ):
+        race_date = START_DATE + timedelta(days=REFIT_REMINDER_DAY)
+        print(
+            f"Reminder: add your {race_date.isoformat()} race result and rerun "
+            "this script to refit Banister."
+        )
 
     # --- Strava fetch (skip if env vars absent) ---
     log = load_log()
@@ -452,6 +738,8 @@ def main():
         os.environ.get(v)
         for v in ("STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET", "STRAVA_REFRESH_TOKEN")
     )
+
+    log_dirty = False
 
     if have_strava_env:
         print("Fetching Strava access token…")
@@ -461,7 +749,19 @@ def main():
             print(f"ERROR getting Strava token: {e}", file=sys.stderr)
             sys.exit(1)
 
-        after_epoch = log.get("last_fetch_epoch", START_EPOCH)
+        if args.backfill_from:
+            try:
+                backfill_day = datetime.strptime(args.backfill_from, "%Y-%m-%d").date()
+            except ValueError:
+                print(
+                    "ERROR: --backfill-from must be YYYY-MM-DD",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            after_epoch = int(datetime.combine(backfill_day, datetime.min.time(), tzinfo=timezone.utc).timestamp())
+            print(f"Backfill mode: forcing fetch cursor to {args.backfill_from} ({after_epoch})")
+        else:
+            after_epoch = log.get("last_fetch_epoch", START_EPOCH)
         print(f"Fetching activities after epoch {after_epoch}…")
         try:
             raw = fetch_activities(token, after_epoch)
@@ -469,40 +769,75 @@ def main():
             print(f"ERROR fetching activities: {e}", file=sys.stderr)
             sys.exit(1)
 
-        added = merge_activities(log, raw)
-        print(f"  {len(raw)} activities fetched, {added} new runs added")
+        mstats = merge_activities(log, raw)
+        print(
+            f"  {len(raw)} activities fetched, {mstats['added']} new runs added "
+            f"(skipped dup runs={mstats['skipped_dupe']})"
+        )
 
         # Update last_fetch_epoch to now
         log["last_fetch_epoch"] = int(time.time())
-
-        if not args.dry_run:
-            save_log(log)
-            print(f"Training log saved: {LOG_PATH}")
+        log_dirty = True
     else:
         print("Strava env vars not set — using existing training log")
+        if args.backfill_from:
+            print("WARNING: --backfill-from ignored (Strava env vars are missing)")
+
+    # --- TrainingPeaks import (optional) ---
+    if args.import_trainingpeaks_zip:
+        for zp in args.import_trainingpeaks_zip:
+            try:
+                stats = merge_trainingpeaks_zip(
+                    log,
+                    zp,
+                    include_all_sports=args.trainingpeaks_all_sports,
+                )
+            except Exception as e:
+                print(f"ERROR importing TrainingPeaks ZIP {zp}: {e}", file=sys.stderr)
+                sys.exit(1)
+            print(
+                f"TrainingPeaks import {zp}: +{stats['added']} activities "
+                f"(skipped non-run={stats['skipped_non_run']}, "
+                f"skipped dup runs={stats['skipped_dupe']}, "
+                f"skipped empty={stats['skipped_empty']})"
+            )
+            if stats["added"] > 0:
+                log_dirty = True
+
+    if log_dirty and not args.dry_run:
+        save_log(log)
+        print(f"Training log saved: {LOG_PATH}")
 
     # --- Build Banister series ---
     activities = log.get("activities", [])
     total_trimp = sum(a["trimp"] for a in activities)
     print(f"Activities in log: {len(activities)}, total TRIMP: {total_trimp:.1f}")
 
-    series, mean_trimp = build_series(activities, t_today)
+    series, mean_trimp, pre_day0, daily_loads = build_series(activities, t_today)
     print(f"14-day mean daily TRIMP (projection base load): {mean_trimp:.2f}")
 
     # --- Fit model ---
-    params = fit_params(series)
+    params = fit_params(series, pre_day0=pre_day0)
 
     if params is None:
         print("Banister model not yet active (insufficient data or unphysical fit)")
         predicted_s = None
     else:
         print(f"Fit params: p0={params['p0']:.1f}, k1={params['k1']:.6f}, k2={params['k2']:.6f}")
-        goal_s = series[-1]  # GOAL_DAY entry
+        # Predict race on pre-race state (start of race day), not post-day load.
+        goal_s = series[max(0, GOAL_DAY - 1)]
         predicted_s = params["p0"] - params["k1"] * goal_s["fit"] + params["k2"] * goal_s["fat"]
-        print(f"Predicted Apr 19 finish: {fmt_time(predicted_s)}  ({predicted_s:.0f}s)")
+        print(f"Predicted Apr 19 finish (pre-race): {fmt_time(predicted_s)}  ({predicted_s:.0f}s)")
 
     # --- Inject HTML ---
-    inject_into_html(series, params, t_today, dry_run=args.dry_run)
+    inject_into_html(
+        series,
+        params,
+        t_today,
+        pre_day0=pre_day0,
+        daily_loads=daily_loads,
+        dry_run=args.dry_run,
+    )
 
     print("Done.")
 
