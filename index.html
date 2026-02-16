@@ -644,18 +644,24 @@ function buildRidgePlot() {
 
     // Model label
     annotations.push({
-      x: 818, y: yBase + peakH * 0.68,
+      x: -0.03, y: yBase + peakH * 0.68,
+      xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
       text: `<b>${m.label}</b>`, showarrow: false,
       font: { color: m.color, size: 11, family: '"Source Sans 3",Georgia,sans-serif' },
+      bgcolor: 'rgba(255,255,255,0.9)',
+      bordercolor: '#e4e1db',
+      borderwidth: 1,
+      borderpad: 2,
     });
 
     // Probability — large and bold below model name
     annotations.push({
-      x: 818, y: yBase + peakH * 0.2,
+      x: -0.03, y: yBase + peakH * 0.2,
+      xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
       text: `<b>${prob}%</b>`, showarrow: false,
-      font: { color: barColor, size: 14, family: '"JetBrains Mono","Courier New",monospace' },
+      font: { color: barColor, size: 16, family: '"JetBrains Mono","Courier New",monospace' },
     });
 
     // Explicit probability badge at goal threshold for readability
@@ -664,19 +670,23 @@ function buildRidgePlot() {
       xanchor: 'right', yanchor: 'middle',
       text: `<b>${prob}%</b>`,
       showarrow: false,
-      font: { color: barColor, size: 9, family: '"JetBrains Mono","Courier New",monospace' },
-      bgcolor: 'rgba(255,255,255,0.82)',
+      font: { color: barColor, size: 12, family: '"JetBrains Mono","Courier New",monospace' },
+      bgcolor: '#ffffff',
       bordercolor: m.color,
       borderwidth: 1,
-      borderpad: 2,
+      borderpad: 4,
     });
 
-    // Predicted time above peak
+    // Predicted time centered in each distribution
     annotations.push({
-      x: mu, y: yBase + peakH + 0.07,
-      xanchor: 'center', yanchor: 'bottom',
+      x: mu, y: yBase + peakH * 0.5,
+      xanchor: 'center', yanchor: 'middle',
       text: fmt(mu), showarrow: false,
       font: { color: m.color, size: 10, family: '"JetBrains Mono","Courier New",monospace' },
+      bgcolor: '#ffffff',
+      bordercolor: m.color,
+      borderwidth: 1,
+      borderpad: 3,
     });
   });
 
@@ -689,7 +699,7 @@ function buildRidgePlot() {
   annotations.push({
     x: GOAL_S, y: sorted.length * gap + peakH * 0.7,
     text: '\u2190 16:00 goal', xanchor: 'left', yanchor: 'bottom',
-    showarrow: false, font: { color: '#c23228', size: 10, family: '"Source Sans 3",sans-serif' },
+    showarrow: false, font: { color: '#c23228', size: 14, family: '"Source Sans 3",sans-serif' },
   });
   annotations.push({
     x: 820, y: sorted.length * gap + peakH * 0.7,
@@ -713,7 +723,7 @@ function buildRidgePlot() {
       range: [-0.2, sorted.length * gap + peakH + 0.4],
       showticklabels: false, showgrid: false, zeroline: false,
     },
-    margin: { t: 20, b: 44, l: 185, r: 20 },
+    margin: { t: 20, b: 44, l: 210, r: 20 },
     shapes: [
       // Make the sub-16 region obvious across all ridges.
       { type: 'rect', x0: 820, x1: GOAL_S, y0: -0.2, y1: sorted.length * gap + peakH + 0.4,
