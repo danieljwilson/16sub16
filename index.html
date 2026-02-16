@@ -643,11 +643,12 @@ function buildRidgePlot() {
     });
 
     // Left legend row: model + probability on same line
+    const legendLabel = m.key === 'cons' ? 'Conservative<br>Linear' : m.label;
     annotations.push({
       x: -0.03, y: yBase + peakH * 0.5,
       xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
-      text: `<span style="color:${m.color};font-size:16px;"><b>${m.label}</b></span> <span style="color:${barColor};font-size:16px;"><b>${prob}%</b></span>`,
+      text: `<span style="display:inline-block;min-width:170px;text-align:right;line-height:1.05;color:${m.color};font-size:16px;vertical-align:middle;"><b>${legendLabel}</b></span><span style="display:inline-block;min-width:54px;text-align:right;margin-left:18px;color:${barColor};font-size:16px;vertical-align:middle;"><b>${prob}%</b></span>`,
       showarrow: false,
       font: { color: '#9a9590', size: 16, family: '"Source Sans 3",Georgia,sans-serif' },
     });
@@ -680,9 +681,9 @@ function buildRidgePlot() {
     x: -0.03, y: sorted.length * gap + peakH * 0.7,
     xref: 'paper', yref: 'y',
     text: '% = P(T < 16:00)',
-    xanchor: 'left', yanchor: 'bottom',
+    xanchor: 'right', yanchor: 'bottom',
     showarrow: false,
-    font: { color: '#9a9590', size: 10, family: '"Source Sans 3",sans-serif' },
+    font: { color: '#9a9590', size: 15, family: '"Source Sans 3",sans-serif' },
   });
 
   const xticks = [], xlabels = [];
@@ -699,7 +700,7 @@ function buildRidgePlot() {
       range: [-0.2, sorted.length * gap + peakH + 0.4],
       showticklabels: false, showgrid: false, zeroline: false,
     },
-    margin: { t: 20, b: 44, l: 210, r: 20 },
+    margin: { t: 20, b: 44, l: 232, r: 20 },
     shapes: [
       // Make the sub-16 region obvious across all ridges.
       { type: 'rect', x0: 820, x1: GOAL_S, y0: -0.2, y1: sorted.length * gap + peakH + 0.4,
