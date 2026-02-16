@@ -1,6 +1,46 @@
 {
   "activities": [
     {
+      "source": "strava",
+      "strava_id": 16222229390,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -67,
+      "duration_s": 3288,
+      "avg_hr": null,
+      "trimp": 124.078
+    },
+    {
+      "source": "strava",
+      "strava_id": 16263033469,
+      "name": "Baseline 5k",
+      "sport_type": "Run",
+      "day": -63,
+      "duration_s": 1218,
+      "avg_hr": null,
+      "trimp": 45.963
+    },
+    {
+      "source": "strava",
+      "strava_id": 16361249943,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -53,
+      "duration_s": 2553,
+      "avg_hr": null,
+      "trimp": 96.341
+    },
+    {
+      "source": "strava",
+      "strava_id": 16385271866,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -51,
+      "duration_s": 2308,
+      "avg_hr": null,
+      "trimp": 87.096
+    },
+    {
       "source": "trainingpeaks",
       "tp_key": "2025-11-11|Run|Running|1326|26.79",
       "name": "Running",
@@ -56,6 +96,16 @@
       "trimp": 42.87
     },
     {
+      "source": "strava",
+      "strava_id": 16556661502,
+      "name": "Long run: W3D1 of 16W to sub-16",
+      "sport_type": "Run",
+      "day": -34,
+      "duration_s": 6650,
+      "avg_hr": null,
+      "trimp": 250.948
+    },
+    {
       "source": "trainingpeaks",
       "tp_key": "2025-11-27|Run|Running|729|12.1",
       "name": "Running",
@@ -78,6 +128,16 @@
       "trimp": 71.01
     },
     {
+      "source": "strava",
+      "strava_id": 16692861510,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -19,
+      "duration_s": 3818,
+      "avg_hr": 139.5,
+      "trimp": 156.976
+    },
+    {
       "source": "trainingpeaks",
       "tp_key": "2025-12-11|Run|Easy 15k|2216|69.88",
       "name": "Easy 15k",
@@ -87,6 +147,26 @@
       "avg_hr": 139.0,
       "tss": 69.88,
       "trimp": 69.88
+    },
+    {
+      "source": "strava",
+      "strava_id": 16758119430,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -12,
+      "duration_s": 2551,
+      "avg_hr": null,
+      "trimp": 96.266
+    },
+    {
+      "source": "strava",
+      "strava_id": 16775992292,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": -10,
+      "duration_s": 3567,
+      "avg_hr": null,
+      "trimp": 134.606
     },
     {
       "source": "trainingpeaks",
@@ -120,6 +200,16 @@
       "avg_hr": 130.0,
       "tss": 97.92,
       "trimp": 97.92
+    },
+    {
+      "source": "strava",
+      "strava_id": 16852471802,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": -1,
+      "duration_s": 1160,
+      "avg_hr": null,
+      "trimp": 43.774
     },
     {
       "strava_id": 16867115788,
@@ -457,5 +547,5 @@
       "trimp": 113.59
     }
   ],
-  "last_fetch_epoch": 1759276800
+  "last_fetch_epoch": 1771271338
 }
