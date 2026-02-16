@@ -139,16 +139,10 @@ h2 {
   <div id="ridgePlot" style="height:420px;"></div>
 </div>
 
-<footer id="footer">16sub16 tracker · Built with Plotly.js</footer>
-<script>
-  document.getElementById('footer').textContent =
-    `16sub16 tracker · Built with Plotly.js · Viewed ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} · Day ${TODAY_DAY} of ${GOAL_DAY}`;
-</script>
-
 <script>
 // BANISTER_DATA_START
-const BANISTER_SERIES=[{"day":0,"fit":3.1619,"fat":17.8899},{"day":1,"fit":3.0875,"fat":15.5083},{"day":2,"fit":3.0149,"fat":13.4438},{"day":3,"fit":4.7795,"fat":22.04},{"day":4,"fit":4.6671,"fat":19.1059},{"day":5,"fit":7.1603,"fat":31.2901},{"day":6,"fit":8.0062,"fat":32.864},{"day":7,"fit":11.0207,"fat":46.6111},{"day":8,"fit":10.7614,"fat":40.4061},{"day":9,"fit":10.5082,"fat":35.0272},{"day":10,"fit":12.5265,"fat":43.1825},{"day":11,"fit":16.2568,"fat":60.2074},{"day":12,"fit":18.0185,"fat":64.3244},{"day":13,"fit":17.5946,"fat":55.7614},{"day":14,"fit":17.1806,"fat":48.3383},{"day":15,"fit":16.7764,"fat":41.9034},{"day":16,"fit":20.6593,"fat":60.5277},{"day":17,"fit":22.0736,"fat":63.2224},{"day":18,"fit":21.5542,"fat":54.8061},{"day":19,"fit":23.6887,"fat":62.4565},{"day":20,"fit":23.1314,"fat":54.1421},{"day":21,"fit":22.5871,"fat":46.9346},{"day":22,"fit":25.1671,"fat":58.2908},{"day":23,"fit":24.575,"fat":50.531},{"day":24,"fit":26.1397,"fat":55.9288},{"day":25,"fit":28.4857,"fat":65.237},{"day":26,"fit":31.1175,"fat":75.2352},{"day":27,"fit":33.4124,"fat":82.3464},{"day":28,"fit":34.0061,"fat":79.1915},{"day":29,"fit":33.206,"fat":68.6493},{"day":30,"fit":36.3722,"fat":81.8454},{"day":31,"fit":35.5165,"fat":70.95},{"day":32,"fit":37.008,"fat":74.6722},{"day":33,"fit":40.0396,"fat":86.8108},{"day":34,"fit":39.0975,"fat":75.2544},{"day":35,"fit":38.1776,"fat":65.2363},{"day":36,"fit":40.2644,"fat":73.4411},{"day":37,"fit":43.4487,"fat":87.041},{"day":38,"fit":44.9188,"fat":89.5554},{"day":39,"fit":45.7538,"fat":88.3381},{"day":40,"fit":47.4,"fat":91.9834},{"day":41,"fit":49.7732,"fat":99.4757},{"day":42,"fit":48.6021,"fat":86.2333},{"day":43,"fit":50.179,"fat":90.1453},{"day":44,"fit":50.4944,"fat":86.6097},{"day":45,"fit":49.3064,"fat":75.08},{"day":46,"fit":52.851,"fat":91.7044},{"day":47,"fit":53.4827,"fat":90.1062},{"day":48,"fit":53.8021,"fat":87.038},{"day":49,"fit":55.8979,"fat":94.4715},{"day":50,"fit":54.5827,"fat":81.8953},{"day":51,"fit":55.6485,"fat":84.2893},{"day":52,"fit":56.6891,"fat":86.3647},{"day":53,"fit":57.7053,"fat":88.1638},{"day":54,"fit":58.6976,"fat":89.7234},{"day":55,"fit":59.6665,"fat":91.0753},{"day":56,"fit":60.6127,"fat":92.2473},{"day":57,"fit":61.5365,"fat":93.2633},{"day":58,"fit":62.4387,"fat":94.144},{"day":59,"fit":63.3196,"fat":94.9075},{"day":60,"fit":64.1798,"fat":95.5693},{"day":61,"fit":65.0197,"fat":96.1431},{"day":62,"fit":65.8399,"fat":96.6404},{"day":63,"fit":66.6408,"fat":97.0716},{"day":64,"fit":67.4228,"fat":97.4453},{"day":65,"fit":68.1865,"fat":97.7693},{"day":66,"fit":68.9322,"fat":98.0502},{"day":67,"fit":69.6603,"fat":98.2937},{"day":68,"fit":70.3713,"fat":98.5047},{"day":69,"fit":71.0656,"fat":98.6877},{"day":70,"fit":71.7435,"fat":98.8463},{"day":71,"fit":72.4055,"fat":98.9838},{"day":72,"fit":73.0519,"fat":99.103},{"day":73,"fit":73.6831,"fat":99.2063},{"day":74,"fit":74.2994,"fat":99.2959},{"day":75,"fit":74.9013,"fat":99.3735},{"day":76,"fit":75.489,"fat":99.4409},{"day":77,"fit":76.0628,"fat":99.4992},{"day":78,"fit":76.6232,"fat":99.5498},{"day":79,"fit":77.1704,"fat":99.5936},{"day":80,"fit":77.7047,"fat":99.6316},{"day":81,"fit":78.2264,"fat":99.6646},{"day":82,"fit":78.7359,"fat":99.6932},{"day":83,"fit":79.2333,"fat":99.7179},{"day":84,"fit":79.7191,"fat":99.7394},{"day":85,"fit":80.1934,"fat":99.758},{"day":86,"fit":80.6566,"fat":99.7741},{"day":87,"fit":81.1089,"fat":99.7881},{"day":88,"fit":81.5505,"fat":99.8002},{"day":89,"fit":81.9817,"fat":99.8107},{"day":90,"fit":82.4028,"fat":99.8199},{"day":91,"fit":82.814,"fat":99.8277},{"day":92,"fit":83.2155,"fat":99.8346},{"day":93,"fit":83.6076,"fat":99.8405},{"day":94,"fit":83.6423,"fat":97.8759},{"day":95,"fit":83.6762,"fat":96.1728},{"day":96,"fit":83.7093,"fat":94.6964},{"day":97,"fit":83.7416,"fat":93.4165},{"day":98,"fit":83.7731,"fat":92.307},{"day":99,"fit":83.8039,"fat":91.3453},{"day":100,"fit":83.834,"fat":90.5115},{"day":101,"fit":83.8634,"fat":89.7888},{"day":102,"fit":83.892,"fat":89.1622},{"day":103,"fit":83.92,"fat":88.6191},{"day":104,"fit":83.9474,"fat":88.1483},{"day":105,"fit":83.9741,"fat":87.7401},{"day":106,"fit":83.9777,"fat":87.2592},{"day":107,"fit":83.8689,"fat":86.2069},{"day":108,"fit":83.6504,"fat":84.6593},{"day":109,"fit":83.3247,"fat":82.6822},{"day":110,"fit":82.8944,"fat":80.333},{"day":111,"fit":82.3619,"fat":77.661},{"day":112,"fit":81.7296,"fat":74.7094}];
-const BANISTER_PARAMS={"p0": 1077.9244, "k1": 1.3, "k2": 1.04};
+const BANISTER_SERIES=[{"day":-1,"fit":9.6942,"fat":19.7248},{"day":0,"fit":12.628,"fat":34.9888},{"day":1,"fit":12.3308,"fat":30.3311},{"day":2,"fit":12.0407,"fat":26.2933},{"day":3,"fit":13.593,"fat":33.1789},{"day":4,"fit":13.2732,"fat":28.762},{"day":5,"fit":15.5639,"fat":39.6607},{"day":6,"fit":16.2121,"fat":40.1203},{"day":7,"fit":19.0336,"fat":52.9015},{"day":8,"fit":18.5857,"fat":45.8591},{"day":9,"fit":18.1485,"fat":39.7542},{"day":10,"fit":19.987,"fat":47.2803},{"day":11,"fit":23.5417,"fat":63.7597},{"day":12,"fit":25.1321,"fat":67.4038},{"day":13,"fit":24.5408,"fat":58.4309},{"day":14,"fit":23.9634,"fat":50.6524},{"day":15,"fit":26.5959,"fat":61.9942},{"day":16,"fit":30.2477,"fat":77.944},{"day":17,"fit":31.4364,"fat":78.3202},{"day":18,"fit":30.6968,"fat":67.894},{"day":19,"fit":32.6162,"fat":73.8021},{"day":20,"fit":31.8488,"fat":63.9774},{"day":21,"fit":31.0994,"fat":55.4606},{"day":22,"fit":33.4791,"fat":65.6818},{"day":23,"fit":32.6914,"fat":56.9381},{"day":24,"fit":34.0652,"fat":61.483},{"day":25,"fit":36.2248,"fat":70.0518},{"day":26,"fit":38.6745,"fat":79.409},{"day":27,"fit":40.7915,"fat":85.9646},{"day":28,"fit":41.7629,"fat":85.4471},{"day":29,"fit":42.0548,"fat":81.2834},{"day":30,"fit":45.0129,"fat":92.7976},{"day":31,"fit":43.9538,"fat":80.4442},{"day":32,"fit":45.2468,"fat":82.9025},{"day":33,"fit":50.9583,"fat":110.205},{"day":34,"fit":49.7593,"fat":95.5343},{"day":35,"fit":48.5886,"fat":82.8166},{"day":36,"fit":50.4304,"fat":88.681},{"day":37,"fit":53.3755,"fat":100.2521},{"day":38,"fit":54.612,"fat":101.0079},{"day":39,"fit":55.219,"fat":98.266},{"day":40,"fit":56.6425,"fat":100.5896},{"day":41,"fit":58.7982,"fat":106.9363},{"day":42,"fit":57.4148,"fat":92.7007},{"day":43,"fit":58.7843,"fat":95.7517},{"day":44,"fit":58.8973,"fat":91.4698},{"day":45,"fit":57.5115,"fat":79.2931},{"day":46,"fit":60.8631,"fat":95.3567},{"day":47,"fit":61.3063,"fat":93.2723},{"day":48,"fit":61.4416,"fat":89.7826},{"day":49,"fit":63.3577,"fat":96.8508},{"day":50,"fit":64.5395,"fat":99.0791},{"day":51,"fit":65.5772,"fat":100.3521},{"day":52,"fit":66.5904,"fat":101.4557},{"day":53,"fit":67.5798,"fat":102.4123},{"day":54,"fit":68.546,"fat":103.2416},{"day":55,"fit":69.4893,"fat":103.9605},{"day":56,"fit":70.4105,"fat":104.5837},{"day":57,"fit":71.3101,"fat":105.1239},{"day":58,"fit":72.1884,"fat":105.5922},{"day":59,"fit":73.0461,"fat":105.9982},{"day":60,"fit":73.8836,"fat":106.3501},{"day":61,"fit":74.7014,"fat":106.6552},{"day":62,"fit":75.5,"fat":106.9197},{"day":63,"fit":76.2797,"fat":107.1489},{"day":64,"fit":77.0412,"fat":107.3477},{"day":65,"fit":77.7847,"fat":107.5199},{"day":66,"fit":78.5107,"fat":107.6693},{"day":67,"fit":79.2196,"fat":107.7988},{"day":68,"fit":79.9119,"fat":107.911},{"day":69,"fit":80.5878,"fat":108.0083},{"day":70,"fit":81.2479,"fat":108.0926},{"day":71,"fit":81.8924,"fat":108.1657},{"day":72,"fit":82.5218,"fat":108.2291},{"day":73,"fit":83.1364,"fat":108.2841},{"day":74,"fit":83.7365,"fat":108.3317},{"day":75,"fit":84.3225,"fat":108.373},{"day":76,"fit":84.8946,"fat":108.4088},{"day":77,"fit":85.4534,"fat":108.4398},{"day":78,"fit":85.999,"fat":108.4667},{"day":79,"fit":86.5317,"fat":108.49},{"day":80,"fit":87.0519,"fat":108.5102},{"day":81,"fit":87.5599,"fat":108.5277},{"day":82,"fit":88.0559,"fat":108.5429},{"day":83,"fit":88.5403,"fat":108.5561},{"day":84,"fit":89.0132,"fat":108.5675},{"day":85,"fit":89.4751,"fat":108.5774},{"day":86,"fit":89.926,"fat":108.586},{"day":87,"fit":90.3664,"fat":108.5934},{"day":88,"fit":90.7964,"fat":108.5999},{"day":89,"fit":91.2162,"fat":108.6054},{"day":90,"fit":91.6262,"fat":108.6103},{"day":91,"fit":92.0266,"fat":108.6145},{"day":92,"fit":92.4175,"fat":108.6181},{"day":93,"fit":92.7992,"fat":108.6213},{"day":94,"fit":92.7933,"fat":106.4814},{"day":95,"fit":92.7875,"fat":104.6264},{"day":96,"fit":92.7818,"fat":103.0183},{"day":97,"fit":92.7763,"fat":101.6243},{"day":98,"fit":92.7709,"fat":100.4159},{"day":99,"fit":92.7656,"fat":99.3683},{"day":100,"fit":92.7605,"fat":98.4602},{"day":101,"fit":92.7554,"fat":97.673},{"day":102,"fit":92.7505,"fat":96.9906},{"day":103,"fit":92.7457,"fat":96.399},{"day":104,"fit":92.7411,"fat":95.8862},{"day":105,"fit":92.7365,"fat":95.4416},{"day":106,"fit":92.7076,"fat":94.918},{"day":107,"fit":92.5572,"fat":93.773},{"day":108,"fit":92.2882,"fat":92.0892},{"day":109,"fit":91.9034,"fat":89.9384},{"day":110,"fit":91.4055,"fat":87.3827},{"day":111,"fit":90.7971,"fat":84.4761},{"day":112,"fit":90.0809,"fat":81.2652}];
+const BANISTER_PARAMS={"p0": 1039.654, "k1": 0.9, "k2": 0.72};
 const BANISTER_UPDATED="2026-02-16";
 const BANISTER_UPDATED_DAY=50;
 // BANISTER_DATA_END
@@ -184,6 +178,10 @@ function fmt(s) {
 }
 function dayToDate(d) {
   const dt = new Date(START); dt.setDate(dt.getDate()+d); return dt;
+}
+function fmtTooltipDate(dateValue) {
+  const dt = dateValue instanceof Date ? dateValue : new Date(`${dateValue}T00:00:00`);
+  return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
 }
 function normCDF(z) {
   const t = 1/(1+0.2316419*Math.abs(z));
@@ -327,12 +325,15 @@ const MODELS = [
   if (!BANISTER_PARAMS || !BANISTER_SERIES.length) return;
   const {p0, k1, k2} = BANISTER_PARAMS;
   const byDay = Object.fromEntries(BANISTER_SERIES.map(s => [s.day, s]));
+  function latestStateAtOrBefore(day) {
+    const eligibleDays = BANISTER_SERIES.filter(s => s.day <= day).map(s => s.day);
+    if (!eligibleDays.length) return null;
+    return byDay[Math.max(...eligibleDays)];
+  }
   function banisterPredict(t) {
-    let row = byDay[t];
-    if (!row) {
-      const d = Math.max(...BANISTER_SERIES.filter(s => s.day <= t).map(s => s.day));
-      row = byDay[d];
-    }
+    // Align prediction with fit calibration: evaluate race at pre-race state.
+    const stateDay = t <= 0 ? -1 : t - 1;
+    const row = byDay[stateDay] || latestStateAtOrBefore(stateDay);
     return row ? p0 - k1 * row.fit + k2 * row.fat : p0;
   }
   MODELS.push({
@@ -460,7 +461,7 @@ function buildToggles() {
 // ─────────────────────────────────────────────────────────
 let chartDays, chartDates;
 function initChartAxes() {
-  chartDays  = Array.from({length:125}, (_,i)=>i);
+  chartDays  = Array.from({length:GOAL_DAY+1}, (_,i)=>i);
   chartDates = chartDays.map(d=>dayToDate(d));
 }
 
@@ -500,8 +501,23 @@ function buildTraces() {
       name: m.label, x: chartDates,
       y: lineY,
       mode:'lines', line:{color:m.color, dash:m.dash, width: m.key === 'ensemble' ? 2.5 : 2},
-      hovertemplate: m.label + ': %{text}<br><span style="color:#9a9590;font-size:0.9em">%{x|%b %-d}</span><extra></extra>',
+      hovertemplate: `⏱️ %{text}<br>📆 %{x|%b %d}<extra></extra>`,
+      hoverlabel: {
+        bgcolor: 'rgba(255,255,255,0.98)',
+        bordercolor: m.color,
+        font: { color: m.color, size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+      },
       text: lineY.map(v=>fmt(v)),
+    });
+    // End-point dot at GOAL_DAY
+    traces.push({
+      name: m.label + ' end',
+      x: [dayToDate(GOAL_DAY)],
+      y: [lineY[lineY.length - 1]],
+      mode: 'markers',
+      marker: { size: 5, color: m.color },
+      hoverinfo: 'skip',
+      showlegend: false,
     });
   });
 
@@ -510,23 +526,43 @@ function buildTraces() {
     x: upcoming.map(r=>dayToDate(r.day)),
     y: upcoming.map(()=>1210),
     mode:'text',
-    text: upcoming.map(()=>'\ud83c\udfbd'),
+    text: upcoming.map(()=>'🏎️'),
     textposition:'top center',
-    textfont:{size:14},
-    hovertemplate: upcoming.map(r=>`${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
+    textfont:{size:17},
+    hovertemplate: upcoming.map(r=>`<b>${r.name}</b><br>📆 ${fmtTooltipDate(r.date)}<br>${Math.max(0, r.day - TODAY_DAY)} day${Math.max(0, r.day - TODAY_DAY) === 1 ? '' : 's'} to race<extra></extra>`),
+    hoverlabel: {
+      bgcolor: 'rgba(255,255,255,0.98)',
+      bordercolor: '#4b4b4b',
+      font: { color: '#2f2f2f', size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+    },
     showlegend:false
   });
 
   traces.push({
-    name:'Race Results',
+    name:'Race Result Labels',
     x: races.map(r=>new Date(r.date)),
     y: races.map(r=>r.s),
-    mode:'markers+text',
-    marker:{size:13, color:'#237a3a', symbol:'circle', line:{color:'#ffffff',width:2}},
+    mode:'text',
     text: races.map(r=>fmt(r.s)),
     textposition:'top center',
     textfont:{color:'#237a3a', size:11, family:'monospace'},
-    hovertemplate: races.map(r=>`<b>${r.name}</b><br>${r.date}<br>Time: ${fmt(r.s)}<extra></extra>`),
+    hoverinfo:'skip',
+    showlegend:false
+  });
+  traces.push({
+    name:'Race Results',
+    x: races.map(r=>new Date(r.date)),
+    y: races.map(r=>r.s),
+    mode:'text',
+    text: races.map(()=>'🏎️'),
+    textposition:'middle center',
+    textfont:{size:17},
+    hovertemplate: races.map(r=>`<b>${r.name}</b><br>⏱️ ${fmt(r.s)}<br>📆 ${fmtTooltipDate(r.date)}<extra></extra>`),
+    hoverlabel: {
+      bgcolor: 'rgba(255,255,255,0.98)',
+      bordercolor: '#4b4b4b',
+      font: { color: '#2f2f2f', size: 14, family: '"JetBrains Mono","Courier New",monospace' }
+    },
     showlegend:false
   });
 
@@ -540,7 +576,7 @@ function buildLayout() {
     paper_bgcolor:'transparent', plot_bgcolor:'rgba(255,255,255,0.6)',
     font:{family:'"Source Sans 3",Georgia,sans-serif', color:'#9a9590', size:11},
     xaxis:{
-      type:'date', range:[new Date('2025-12-22'),new Date('2026-04-26')],
+      type:'date', range:[new Date('2025-12-22'),new Date('2026-04-28')],
       gridcolor:'#e4e1db', tickformat:'%b %-d', showgrid:true, zeroline:false,
     },
     yaxis:{
@@ -549,13 +585,13 @@ function buildLayout() {
     },
     legend:{bgcolor:'rgba(255,255,255,0.92)', bordercolor:'#e4e1db', borderwidth:1,
             font:{size:11}, x:0.01, y:0.01, xanchor:'left', yanchor:'bottom'},
-    margin:{t:16, r:16, b:48, l:72},
+    margin:{t:16, r:60, b:48, l:72},
     hovermode:'closest',
     annotations:[
       {x:dayToDate(GOAL_DAY), y:GOAL_S, xanchor:'right', yanchor:'bottom',
-       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:20}},
+       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:16}},
       {x:dayToDate(TODAY_DAY), y:1215, xanchor:'left', yanchor:'top',
-       text:`\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, font:{color:'#d29922',size:10}},
+       text:`<b>TODAY</b><br>\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, align:'left', font:{color:'#d29922',size:10}},
     ],
     shapes:[
       {type:'line', x0:dayToDate(TODAY_DAY), x1:dayToDate(TODAY_DAY),
@@ -572,33 +608,105 @@ function initChart() {
 }
 
 const MODEL_TRACE_IDX = {};
-MODELS.forEach((m, i) => { MODEL_TRACE_IDX[m.key] = 3 + i; });
+const MODEL_DOT_IDX = {};
+MODELS.forEach((m, i) => {
+  MODEL_TRACE_IDX[m.key] = 3 + i * 2;      // line trace
+  MODEL_DOT_IDX[m.key]   = 3 + i * 2 + 1;  // end-dot trace
+});
 const BAYES_BAND_IDX = [1,2];
-
-function buildGoalAnnotation(m) {
-  const pred = m.predict(GOAL_DAY);
-  const diff = pred - GOAL_S;
-  const sign = diff < 0 ? '\u2212' : '+';
-  const label = `${m.label}<br><b>${fmt(pred)}</b><br><span style="font-size:9px">${sign}${fmt(Math.abs(diff))}</span>`;
-  return {
-    x: dayToDate(GOAL_DAY), y: pred,
-    xanchor: 'right', yanchor: 'middle',
-    text: label,
-    showarrow: true, arrowhead: 1, arrowsize: 0.7,
-    arrowcolor: m.color, ax: -40, ay: 0,
-    bgcolor: 'rgba(255,255,255,0.92)',
-    bordercolor: m.color, borderwidth: 1.5, borderpad: 5,
-    font: { color: m.color, size: 10, family: '"Source Sans 3",sans-serif' },
-  };
-}
 
 function updateGoalAnnotations() {
   if (!plotInited) return;
-  const base = buildLayout().annotations;
-  const modelAnnotations = MODELS
+  const layout = buildLayout();
+  const baseAnnotations = layout.annotations;
+  const baseShapes = layout.shapes || [];
+
+  // Collect active model predictions and de-overlap vertically
+  const items = MODELS
     .filter(m => active[m.key])
-    .map(m => buildGoalAnnotation(m));
-  Plotly.relayout('chart', { annotations: [...base, ...modelAnnotations] });
+    .map(m => ({ model: m, pred: m.predict(GOAL_DAY) }))
+    .sort((a, b) => a.pred - b.pred);
+
+  // Bounded two-pass packing in y-units derived from pixel spacing
+  const yMin = layout.yaxis.range[0];
+  const yMax = layout.yaxis.range[1];
+  const chartEl = document.getElementById('chart');
+  const plotHeightPx = chartEl ? chartEl.clientHeight : 490;
+  const innerHeightPx = Math.max(160, plotHeightPx - layout.margin.t - layout.margin.b);
+  const minGapPx = 24;
+  const edgePadPx = 12;
+  const pxToY = (px) => (px / innerHeightPx) * (yMax - yMin);
+  const minGapY = pxToY(minGapPx);
+  const edgePadY = pxToY(edgePadPx);
+  const lowerBound = yMin + edgePadY;
+  const upperBound = yMax - edgePadY;
+
+  // Initial positions at true predictions
+  items.forEach(it => { it.displayY = it.pred; });
+
+  // Pass 1: forward packing (bottom -> top in y-value space)
+  for (let i = 1; i < items.length; i++) {
+    const minAllowed = items[i - 1].displayY + minGapY;
+    if (items[i].displayY < minAllowed) items[i].displayY = minAllowed;
+  }
+  if (items.length > 0 && items[items.length - 1].displayY > upperBound) {
+    const shiftDown = items[items.length - 1].displayY - upperBound;
+    items.forEach(it => { it.displayY -= shiftDown; });
+  }
+
+  // Pass 2: reverse packing (top -> bottom) after clamping
+  for (let i = items.length - 2; i >= 0; i--) {
+    const maxAllowed = items[i + 1].displayY - minGapY;
+    if (items[i].displayY > maxAllowed) items[i].displayY = maxAllowed;
+  }
+  if (items.length > 0 && items[0].displayY < lowerBound) {
+    const shiftUp = lowerBound - items[0].displayY;
+    items.forEach(it => { it.displayY += shiftUp; });
+    // Re-apply spacing after lower-bound correction
+    for (let i = 1; i < items.length; i++) {
+      const minAllowed = items[i - 1].displayY + minGapY;
+      if (items[i].displayY < minAllowed) items[i].displayY = minAllowed;
+    }
+  }
+
+  const goalDateX = new Date('2026-04-22');  // a few days right of Apr 19
+  const connectorShapes = items.map(it => ({
+    type: 'line',
+    xref: 'x',
+    yref: 'y',
+    x0: dayToDate(GOAL_DAY),
+    y0: it.pred,
+    x1: goalDateX,
+    y1: it.displayY,
+    line: { color: it.model.color, width: 1.2 },
+    layer: 'above',
+  }));
+
+  const modelAnnotations = items.map(it => ({
+    x: goalDateX, y: it.displayY,
+    xanchor: 'left', yanchor: 'middle',
+    text: fmt(it.pred),
+    align: 'center',
+    width: 66,
+    height: 24,
+    valign: 'middle',
+    showarrow: false,
+    bgcolor: 'rgba(255,255,255,0.97)',
+    bordercolor: it.model.color,
+    borderwidth: 1.5,
+    borderpad: 4,
+    font: { color: it.model.color, size: 11, family: '"JetBrains Mono","Courier New",monospace' },
+  }));
+
+  Plotly.relayout('chart', {
+    annotations: [...baseAnnotations, ...modelAnnotations],
+    shapes: [...baseShapes, ...connectorShapes],
+  }).then(() => {
+    document.querySelectorAll('#chart .annotation .bg').forEach(bg => {
+      bg.setAttribute('rx', 8);
+      bg.setAttribute('ry', 8);
+    });
+  });
 }
 
 function updateChart() {
@@ -606,6 +714,7 @@ function updateChart() {
   MODELS.forEach(m => {
     const vis = active[m.key];
     Plotly.restyle('chart', {visible: vis}, [MODEL_TRACE_IDX[m.key]]);
+    Plotly.restyle('chart', {visible: vis}, [MODEL_DOT_IDX[m.key]]);
     if (m.key === 'bayes') {
       Plotly.restyle('chart', {visible: vis}, BAYES_BAND_IDX);
     }
