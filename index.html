@@ -642,39 +642,14 @@ function buildRidgePlot() {
       hoverinfo: 'skip', showlegend: false,
     });
 
-    // Model label
+    // Left legend row: model + probability on same line
     annotations.push({
-      x: -0.03, y: yBase + peakH * 0.68,
+      x: -0.03, y: yBase + peakH * 0.5,
       xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
-      text: `<b>${m.label}</b>`, showarrow: false,
-      font: { color: m.color, size: 11, family: '"Source Sans 3",Georgia,sans-serif' },
-      bgcolor: 'rgba(255,255,255,0.9)',
-      bordercolor: '#e4e1db',
-      borderwidth: 1,
-      borderpad: 2,
-    });
-
-    // Probability — large and bold below model name
-    annotations.push({
-      x: -0.03, y: yBase + peakH * 0.2,
-      xref: 'paper', yref: 'y',
-      xanchor: 'right', yanchor: 'middle',
-      text: `<b>${prob}%</b>`, showarrow: false,
-      font: { color: barColor, size: 16, family: '"JetBrains Mono","Courier New",monospace' },
-    });
-
-    // Explicit probability badge at goal threshold for readability
-    annotations.push({
-      x: GOAL_S - 8, y: yBase + peakH * 0.5,
-      xanchor: 'right', yanchor: 'middle',
-      text: `<b>${prob}%</b>`,
+      text: `<span style="color:${m.color};font-size:16px;"><b>${m.label}</b></span> <span style="color:${barColor};font-size:16px;"><b>${prob}%</b></span>`,
       showarrow: false,
-      font: { color: barColor, size: 12, family: '"JetBrains Mono","Courier New",monospace' },
-      bgcolor: '#ffffff',
-      bordercolor: m.color,
-      borderwidth: 1,
-      borderpad: 4,
+      font: { color: '#9a9590', size: 16, family: '"Source Sans 3",Georgia,sans-serif' },
     });
 
     // Predicted time centered in each distribution
@@ -702,8 +677,9 @@ function buildRidgePlot() {
     showarrow: false, font: { color: '#c23228', size: 14, family: '"Source Sans 3",sans-serif' },
   });
   annotations.push({
-    x: 820, y: sorted.length * gap + peakH * 0.7,
-    text: '% labels = P(T < 16:00)',
+    x: -0.03, y: sorted.length * gap + peakH * 0.7,
+    xref: 'paper', yref: 'y',
+    text: '% = P(T < 16:00)',
     xanchor: 'left', yanchor: 'bottom',
     showarrow: false,
     font: { color: '#9a9590', size: 10, family: '"Source Sans 3",sans-serif' },
