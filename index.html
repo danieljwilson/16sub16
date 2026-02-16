@@ -144,6 +144,7 @@ const BANISTER_UPDATED_DAY=50;
 const START = new Date('2025-12-28');
 const GOAL_S = 960;   // 16:00 in seconds
 const GOAL_DAY = 112; // Apr 19, 2026
+const BANISTER_SMOOTHING_DAYS = 7; // display-only, set 1 to disable
 const TODAY_DAY = Math.min(GOAL_DAY, Math.max(0, Math.floor((new Date() - START) / (1000*60*60*24))));
 
 const races = [
@@ -175,6 +176,17 @@ function normCDF(z) {
   const phi = Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
   const cdf = 1 - phi*p;
   return z >= 0 ? cdf : 1-cdf;
+}
+
+function trailingMean(values, windowDays) {
+  const w = Math.max(1, Math.floor(windowDays));
+  if (w === 1) return values.slice();
+  return values.map((_, i) => {
+    const start = Math.max(0, i - w + 1);
+    let sum = 0;
+    for (let j = start; j <= i; j++) sum += values[j];
+    return sum / (i - start + 1);
+  });
 }
 
 // ─────────────────────────────────────────────────────────
@@ -277,13 +289,13 @@ const MODELS = [
       const d = Math.max(...BANISTER_SERIES.filter(s => s.day <= t).map(s => s.day));
       row = byDay[d];
     }
-    return row ? p0 + k1 * row.fit - k2 * row.fat : p0;
+    return row ? p0 - k1 * row.fit + k2 * row.fat : p0;
   }
   MODELS.push({
     key: 'banister', label: 'Banister', color: '#e8b84b', dash: 'solid',
     predict: banisterPredict,
-    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 at your recent average daily load. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
-    formula: 'p(t) = p\u2080 + k\u2081\u00b7FIT(t) \u2212 k\u2082\u00b7FAT(t)',
+    desc: `Fitness-fatigue model (Banister 1975) fed by actual Strava training data. FIT (\u03c4=42d) accumulates from TRIMP; FAT (\u03c4=7d) decays faster. Projects to Apr 19 with a simple build -> sharpen -> taper load pattern from your recent 14-day average. Updated: ${BANISTER_UPDATED} (Day ${BANISTER_UPDATED_DAY}).`,
+    formula: 'p(t) = p\u2080 - k\u2081\u00b7FIT(t) + k\u2082\u00b7FAT(t)',
   });
 })();
 
@@ -404,7 +416,7 @@ function buildTraces() {
 
   traces.push({
     name:'\ud83c\udfaf 16:00 Goal', x:[dayToDate(0),dayToDate(GOAL_DAY)], y:[GOAL_S,GOAL_S],
-    mode:'lines', line:{color:'#f85149',dash:'dot',width:1.5}, hoverinfo:'skip',
+    mode:'lines', line:{color:'#f85149',dash:'dot',width:3}, hoverinfo:'skip',
     showlegend:false
   });
 
@@ -429,12 +441,14 @@ function buildTraces() {
   });
 
   MODELS.forEach(m => {
+    const rawY = chartDays.map(t => m.predict(t));
+    const lineY = m.key === 'banister' ? trailingMean(rawY, BANISTER_SMOOTHING_DAYS) : rawY;
     traces.push({
       name: m.label, x: chartDates,
-      y: chartDays.map(t => m.predict(t)),
+      y: lineY,
       mode:'lines', line:{color:m.color, dash:m.dash, width: m.key === 'ensemble' ? 2.5 : 2},
       hovertemplate: m.label+': %{text}<extra></extra>',
-      text: chartDays.map(t=>fmt(m.predict(t))),
+      text: lineY.map(v=>fmt(v)),
     });
   });
 
@@ -442,11 +456,11 @@ function buildTraces() {
     name:'Upcoming Races',
     x: upcoming.map(r=>dayToDate(r.day)),
     y: upcoming.map(()=>1210),
-    mode:'markers+text',
-    marker:{symbol:'diamond', size:11, color:'#d29922', line:{color:'#fff',width:1}},
-    text: upcoming.map(r=>'\ud83d\udccc'),
+    mode:'text',
+    text: upcoming.map(()=>'\ud83c\udfbd'),
     textposition:'top center',
-    hovertemplate: upcoming.map(r=>`\ud83d\udccc ${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
+    textfont:{size:14},
+    hovertemplate: upcoming.map(r=>`${r.name}<br>${r.date}<br>Day ${r.day}<extra></extra>`),
     showlegend:false
   });
 
@@ -459,7 +473,7 @@ function buildTraces() {
     text: races.map(r=>fmt(r.s)),
     textposition:'top center',
     textfont:{color:'#237a3a', size:11, family:'monospace'},
-    hovertemplate: races.map(r=>`<b>${r.name}</b><br>${r.date}<br>Time: ${fmt(r.s)}<br>${r.note}<extra></extra>`),
+    hovertemplate: races.map(r=>`<b>${r.name}</b><br>${r.date}<br>Time: ${fmt(r.s)}<extra></extra>`),
     showlegend:false
   });
 
@@ -486,7 +500,7 @@ function buildLayout() {
     hovermode:'closest',
     annotations:[
       {x:dayToDate(GOAL_DAY), y:GOAL_S, xanchor:'right', yanchor:'bottom',
-       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:10}},
+       text:'\ud83c\udfaf 16:00', showarrow:false, font:{color:'#f85149',size:20}},
       {x:dayToDate(TODAY_DAY), y:1215, xanchor:'left', yanchor:'top',
        text:`\u2190 ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`, showarrow:false, font:{color:'#d29922',size:10}},
     ],
@@ -644,6 +658,19 @@ function buildRidgePlot() {
       font: { color: barColor, size: 14, family: '"JetBrains Mono","Courier New",monospace' },
     });
 
+    // Explicit probability badge at goal threshold for readability
+    annotations.push({
+      x: GOAL_S - 8, y: yBase + peakH * 0.5,
+      xanchor: 'right', yanchor: 'middle',
+      text: `<b>${prob}%</b>`,
+      showarrow: false,
+      font: { color: barColor, size: 9, family: '"JetBrains Mono","Courier New",monospace' },
+      bgcolor: 'rgba(255,255,255,0.82)',
+      bordercolor: m.color,
+      borderwidth: 1,
+      borderpad: 2,
+    });
+
     // Predicted time above peak
     annotations.push({
       x: mu, y: yBase + peakH + 0.07,
@@ -664,6 +691,13 @@ function buildRidgePlot() {
     text: '\u2190 16:00 goal', xanchor: 'left', yanchor: 'bottom',
     showarrow: false, font: { color: '#c23228', size: 10, family: '"Source Sans 3",sans-serif' },
   });
+  annotations.push({
+    x: 820, y: sorted.length * gap + peakH * 0.7,
+    text: '% labels = P(T < 16:00)',
+    xanchor: 'left', yanchor: 'bottom',
+    showarrow: false,
+    font: { color: '#9a9590', size: 10, family: '"Source Sans 3",sans-serif' },
+  });
 
   const xticks = [], xlabels = [];
   for (let s = 840; s <= 1200; s += 30) { xticks.push(s); xlabels.push(fmt(s)); }
@@ -680,6 +714,11 @@ function buildRidgePlot() {
       showticklabels: false, showgrid: false, zeroline: false,
     },
     margin: { t: 20, b: 44, l: 185, r: 20 },
+    shapes: [
+      // Make the sub-16 region obvious across all ridges.
+      { type: 'rect', x0: 820, x1: GOAL_S, y0: -0.2, y1: sorted.length * gap + peakH + 0.4,
+        fillcolor: 'rgba(63,185,80,0.06)', line: { width: 0 }, layer: 'below' },
+    ],
     annotations, hovermode: false, showlegend: false,
   }, { responsive: true, displayModeBar: false });
 }
