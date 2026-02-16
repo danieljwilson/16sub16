@@ -591,6 +591,8 @@ function buildRidgePlot() {
   const pdfPeak = 1 / (sigma * Math.sqrt(2 * Math.PI));
   const peakH = 0.82;
   const gap   = 1.0;
+  const LEGEND_NAME_X = -0.07;
+  const LEGEND_PCT_X = -0.005;
 
   function pdf(x, mu) {
     return Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
@@ -642,13 +644,21 @@ function buildRidgePlot() {
       hoverinfo: 'skip', showlegend: false,
     });
 
-    // Left legend row: model + probability on same line
-    const legendLabel = m.key === 'cons' ? 'Conservative         <br>Linear' : m.label;
+    // Left legend row: two columns (model | percentage)
+    const legendLabel = m.key === 'cons' ? 'Conservative<br>Linear' : m.label;
     annotations.push({
-      x: -0.03, y: yBase + peakH * 0.5,
+      x: LEGEND_NAME_X, y: yBase + peakH * 0.5,
       xref: 'paper', yref: 'y',
       xanchor: 'right', yanchor: 'middle',
-      text: `<span style="display:inline-block;min-width:170px;text-align:right;line-height:1.05;color:${m.color};font-size:16px;vertical-align:middle;"><b>${legendLabel}</b></span><span style="display:inline-block;min-width:54px;text-align:right;margin-left:18px;color:${barColor};font-size:16px;vertical-align:middle;"><b>  ⋅  ${prob}%</b></span>`,
+      text: `<span style="line-height:1.05;color:${m.color};font-size:16px;"><b>${legendLabel}</b></span>`,
+      showarrow: false,
+      font: { color: '#9a9590', size: 16, family: '"Source Sans 3",Georgia,sans-serif' },
+    });
+    annotations.push({
+      x: LEGEND_PCT_X, y: yBase + peakH * 0.5,
+      xref: 'paper', yref: 'y',
+      xanchor: 'right', yanchor: 'middle',
+      text: `<span style="color:${barColor};font-size:16px;"><b>${prob}%</b></span>`,
       showarrow: false,
       font: { color: '#9a9590', size: 16, family: '"Source Sans 3",Georgia,sans-serif' },
     });
@@ -668,7 +678,7 @@ function buildRidgePlot() {
 
   traces.push({
     x: [GOAL_S, GOAL_S],
-    y: [-0.15, sorted.length * gap + peakH * 0.6],
+    y: [-0.15, sorted.length * gap + peakH + 0.4],
     mode: 'lines', line: { color: '#c23228', width: 1.5, dash: 'dot' },
     hoverinfo: 'skip', showlegend: false,
   });
@@ -678,7 +688,7 @@ function buildRidgePlot() {
     showarrow: false, font: { color: '#c23228', size: 14, family: '"Source Sans 3",sans-serif' },
   });
   annotations.push({
-    x: -0.03, y: sorted.length * gap + peakH * 0.7,
+    x: LEGEND_PCT_X, y: sorted.length * gap + peakH * 0.7,
     xref: 'paper', yref: 'y',
     text: '% = P(T < 16:00)',
     xanchor: 'right', yanchor: 'bottom',
@@ -700,7 +710,7 @@ function buildRidgePlot() {
       range: [-0.2, sorted.length * gap + peakH + 0.4],
       showticklabels: false, showgrid: false, zeroline: false,
     },
-    margin: { t: 20, b: 44, l: 232, r: 20 },
+    margin: { t: 20, b: 44, l: 252, r: 20 },
     shapes: [
       // Make the sub-16 region obvious across all ridges.
       { type: 'rect', x0: 820, x1: GOAL_S, y0: -0.2, y1: sorted.length * gap + peakH + 0.4,
