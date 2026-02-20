@@ -555,7 +555,17 @@
       "duration_s": 3883,
       "avg_hr": 141.0,
       "trimp": 165.554
+    },
+    {
+      "source": "strava",
+      "strava_id": 17448212111,
+      "name": "Morning Run",
+      "sport_type": "Run",
+      "day": 53,
+      "duration_s": 4807,
+      "avg_hr": 133.6,
+      "trimp": 170.897
     }
   ],
-  "last_fetch_epoch": 1771484421
+  "last_fetch_epoch": 1771570649
 }
