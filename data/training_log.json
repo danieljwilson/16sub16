@@ -625,7 +625,17 @@
       "duration_s": 1759,
       "avg_hr": 115.5,
       "trimp": 38.822
+    },
+    {
+      "source": "strava",
+      "strava_id": 17601718323,
+      "name": "Technogym Run Artis: D\u00e9marrage rapide",
+      "sport_type": "Run",
+      "day": 66,
+      "duration_s": 824,
+      "avg_hr": 106.8,
+      "trimp": 14.149
     }
   ],
-  "last_fetch_epoch": 1772606968
+  "last_fetch_epoch": 1772693587
 }
