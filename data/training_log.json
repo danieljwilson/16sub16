@@ -645,7 +645,17 @@
       "duration_s": 1048,
       "avg_hr": null,
       "trimp": 39.548
+    },
+    {
+      "source": "strava",
+      "strava_id": 17640978494,
+      "name": "Night Run",
+      "sport_type": "Run",
+      "day": 69,
+      "duration_s": 1811,
+      "avg_hr": 109.9,
+      "trimp": 34.075
     }
   ],
-  "last_fetch_epoch": 1772865672
+  "last_fetch_epoch": 1772952177
 }
