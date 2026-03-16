@@ -695,7 +695,17 @@
       "duration_s": 3601,
       "avg_hr": 122.5,
       "trimp": 96.17
+    },
+    {
+      "source": "strava",
+      "strava_id": 17732009154,
+      "name": "Afternoon Run",
+      "sport_type": "Run",
+      "day": 77,
+      "duration_s": 3374,
+      "avg_hr": 136.5,
+      "trimp": 128.903
     }
   ],
-  "last_fetch_epoch": 1773557852
+  "last_fetch_epoch": 1773645470
 }
