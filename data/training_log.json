@@ -765,7 +765,27 @@
       "duration_s": 2791,
       "avg_hr": 128.4,
       "trimp": 86.972
+    },
+    {
+      "source": "strava",
+      "strava_id": 17838749558,
+      "name": "Lunch Run",
+      "sport_type": "Run",
+      "day": 86,
+      "duration_s": 4226,
+      "avg_hr": 144.5,
+      "trimp": 195.929
+    },
+    {
+      "source": "strava",
+      "strava_id": 17849736650,
+      "name": "Morning Run",
+      "sport_type": "Run",
+      "day": 87,
+      "duration_s": 4443,
+      "avg_hr": 129.7,
+      "trimp": 143.139
     }
   ],
-  "last_fetch_epoch": 1774335881
+  "last_fetch_epoch": 1774422175
 }
