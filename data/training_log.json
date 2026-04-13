@@ -835,7 +835,17 @@
       "duration_s": 1311,
       "avg_hr": 123.0,
       "trimp": 35.48
+    },
+    {
+      "source": "strava",
+      "strava_id": 18083177190,
+      "name": "Evening Run",
+      "sport_type": "Run",
+      "day": 105,
+      "duration_s": 2429,
+      "avg_hr": 125.1,
+      "trimp": 69.48
     }
   ],
-  "last_fetch_epoch": 1775978066
+  "last_fetch_epoch": 1776067432
 }
